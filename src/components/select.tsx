@@ -1,3 +1,4 @@
+import { Button } from "@chakra-ui/button";
 import { useFormControl } from "@chakra-ui/form-control";
 import {
   chakra,
@@ -70,6 +71,21 @@ export const Select = forwardRef<SelectProps, "select">((props, ref) => {
     { _focus: { zIndex: "unset" } }
   );
 
+  const [selectedValue, setSelectedValue] = React.useState<string | undefined>(placeholder);
+
+  const handleClick = (newValue: string) => {
+    setSelectedValue(newValue)
+  }
+
+  const wrappedChildren = React.Children.map(props.children, child => {
+    // Checking isValidElement is the safe way and avoids a typescript
+    // error too.
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, { onClick: handleClick });
+    }
+    return child;
+  })
+
   return (
     <chakra.div
       className="chakra-select__wrapper"
@@ -77,6 +93,7 @@ export const Select = forwardRef<SelectProps, "select">((props, ref) => {
       {...layoutProps}
       {...rootProps}
     >
+      {selectedValue}
       <SelectField
         ref={ref}
         height={"20px"}
@@ -84,7 +101,7 @@ export const Select = forwardRef<SelectProps, "select">((props, ref) => {
         {...ownProps}
         __css={fieldStyles}
       >
-        {props.children}
+        {wrappedChildren}
       </SelectField>
     </chakra.div>
   );
@@ -102,11 +119,16 @@ export const DefaultIcon: React.FC<PropsOf<"svg">> = (props) => (
 interface SelectOptionProps extends HTMLChakraProps<"option"> {}
 
 export const SelectOption: React.FC<SelectOptionProps> = (props) => {
-  const { children, ...rest } = props;
+  const { children } = props;
 
+  if (!props.onClick) {
+    return;
+  }
+  
+  console.log(props);
   return (
-    <chakra.option {...rest} className="chakra-select__option">
+    <Button onClick={() => {props.onClick(props.value);}}>
       {children}
-    </chakra.option>
+    </Button>
   );
 };

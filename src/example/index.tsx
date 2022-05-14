@@ -15,7 +15,7 @@ import {
     Textarea,
     Button, Flex, Spacer
 } from "@chakra-ui/react";
-import {Select} from "../components";
+import { Select, SelectOption } from "../components";
 
 function Form() {
     return (
@@ -33,8 +33,8 @@ function Form() {
                         <FormControl maxW="300px" maxH="300px">
                             <FormLabel htmlFor="heroes" fontWeight="600">S-Tier Heroes:</FormLabel>
                             <Select name="heroes">
-                                <option value="">Select</option>
-                                <option value="1">One</option>
+                                <SelectOption value="">Select</SelectOption>
+                                <SelectOption value="1">One</SelectOption>
                             </Select>
                         </FormControl>
 
