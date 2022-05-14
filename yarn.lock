@@ -1063,6 +1063,14 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@chakra-ui/clickable@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/clickable/-/clickable-2.0.0.tgz#ea984465c4deb264c9204c7d6137da26336a699e"
+  integrity sha512-6D8YgNj/Pk7lG3fYEo36Nrke1klX2+NfuLORwZf/iYkef9DEZeXeIjNm4WNLhc50NMZEpXQlvMt6azam1otd0Q==
+  dependencies:
+    "@chakra-ui/react-utils" "2.0.0"
+    "@chakra-ui/utils" "2.0.0"
+
 "@chakra-ui/color-mode@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@chakra-ui/color-mode/-/color-mode-2.0.0.tgz#dfe4143f35cc8df7972f7a441a65ec1eb94750e0"
@@ -1071,6 +1079,13 @@
     "@chakra-ui/hooks" "2.0.0"
     "@chakra-ui/react-env" "2.0.0"
     "@chakra-ui/utils" "2.0.0"
+
+"@chakra-ui/descendant@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/descendant/-/descendant-3.0.0.tgz#aab75973d1f9bf61b446ede4da45d21d655c0754"
+  integrity sha512-SZBrHnHtRSt6lYeelO3mK6oo69na+ERq/dhdVAkWrmcHCLJvbfjZ8YE7b4rl8/oSGMjI5m07RvcbX/rqak3hPw==
+  dependencies:
+    "@chakra-ui/react-utils" "^2.0.0"
 
 "@chakra-ui/form-control@^2.0.0":
   version "2.0.0"
@@ -1099,6 +1114,14 @@
   dependencies:
     "@chakra-ui/utils" "2.0.0"
 
+"@chakra-ui/popper@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/popper/-/popper-3.0.0.tgz#ab182bdb98b6951ac83e3102b4285fe368e344b6"
+  integrity sha512-ROogHl6A1g/6nhWpugNt2+ixI80RS2yLxj8qrq3kRQiQreu9LgomPPHz7x1vzbSLoPkgQKoa+VsnMvSzDUnCwQ==
+  dependencies:
+    "@chakra-ui/react-utils" "2.0.0"
+    "@popperjs/core" "^2.9.3"
+
 "@chakra-ui/react-env@2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@chakra-ui/react-env/-/react-env-2.0.0.tgz#84fafcdb8745e33f8fb0ee5f5b28c7f6809cf1e2"
@@ -1106,7 +1129,7 @@
   dependencies:
     "@chakra-ui/utils" "2.0.0"
 
-"@chakra-ui/react-utils@2.0.0":
+"@chakra-ui/react-utils@2.0.0", "@chakra-ui/react-utils@^2.0.0":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@chakra-ui/react-utils/-/react-utils-2.0.0.tgz#f416e797e06bfecee5c749396f333a3c60391fe9"
   integrity sha512-QcDt2/e3xhfbDcR0FF/E+E1LYGiPMRh8U6160mcgDaG+IzEXtr2ELgZI5EYNpS5HyujpNBt7ivajgi5JQ8h6ew==
@@ -1650,6 +1673,11 @@
     loader-utils "^2.0.0"
     schema-utils "^3.0.0"
     source-map "^0.7.3"
+
+"@popperjs/core@^2.9.3":
+  version "2.11.5"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.5.tgz#db5a11bf66bdab39569719555b0f76e138d7bd64"
+  integrity sha512-9X2obfABZuDVLCgPK9aX0a/x4jaOEweTTWE2+9sr0Qqqevj2Uv5XorvusThmc9XGYpS9yI+fhh8RTafBtGposw==
 
 "@rollup/plugin-babel@^5.2.0":
   version "5.3.1"
