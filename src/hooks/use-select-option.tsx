@@ -1,4 +1,4 @@
-import { UseSelectItemProps, useSelectItem } from "./useSelectItem"
+import { UseSelectItemProps, useSelectItem } from "./use-select-item"
 
 /* -------------------------------------------------------------------------------------------------
  * useSelectOption: Composes useSelectItem to provide a selectable/checkable select item

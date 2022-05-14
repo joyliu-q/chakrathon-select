@@ -27,7 +27,7 @@ import {
   normalizeEventKey,
 } from "@chakra-ui/utils"
 import * as React from "react"
-import { isTargetSelectItem } from "./useSelectItem"
+import { isTargetSelectItem } from "./use-select-item"
 
 /* -------------------------------------------------------------------------------------------------
  * Create context to track descendants and their indices
