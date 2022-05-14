@@ -34,11 +34,17 @@
     "@chakra-ui/descendant": "^3.0.0",
     "@chakra-ui/form-control": "^2.0.0",
     "@chakra-ui/popper": "^3.0.0",
+    "@chakra-ui/react": "^2.0.0",
     "@chakra-ui/system": "^2.0.0",
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "add": "^2.0.6",
+    "framer-motion": "^6",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-scripts": "^5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "yarn": "^1.22.18"
   },
   "license": "Apache-2.0",
   "version": "0.0.0",
