@@ -30,6 +30,8 @@
     "typescript": "^4.0.3"
   },
   "dependencies": {
+    "@chakra-ui/form-control": "^2.0.0",
+    "@chakra-ui/system": "^2.0.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "react-scripts": "^5",
