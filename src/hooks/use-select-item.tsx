@@ -1,4 +1,4 @@
-import { useSelectContext, useSelectDescendant } from "./useSelect"
+import { useSelectContext, useSelectDescendant } from "./use-select"
 import React from "react"
 import { useClickable } from "@chakra-ui/clickable"
 import {
