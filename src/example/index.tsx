@@ -33,7 +33,7 @@ function Form() {
                         <FormControl maxW="300px" maxH="300px">
                             <FormLabel htmlFor="heroes" fontWeight="600">S-Tier Heroes:</FormLabel>
                             <Select name="heroes">
-                                <SelectOption value="">Select</SelectOption>
+                                <SelectOption value="Select">Select</SelectOption>
                                 <SelectOption value="1">One</SelectOption>
                             </Select>
                         </FormControl>

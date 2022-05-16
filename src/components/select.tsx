@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/layout";
+import { Flex, Text, Box } from "@chakra-ui/react";
 import {
   forwardRef,
   layoutPropNames,
@@ -39,7 +39,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       case 'option':
         return {value: action.payload};
       case 'reset':
-        return "SELECT" // TODO: pain
+        return {value: action.payload} // TODO: pain
         //return init(action.payload);
       default:
         throw new Error();
@@ -52,19 +52,23 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     <Flex
       {...layoutProps}
       {...rootProps}
+      flexDir="column"
     >
       <>
-        {state}
-        {
-          React.Children.map(props.children, child => {
-            // Checking isValidElement is the safe way and avoids a typescript
-            // error too.
-            if (React.isValidElement(child)) {
-              return React.cloneElement(child, { handleClick: () => dispatch({type: "option", payload: child.props.value}) });
-            }
-            return child;
-          })
-        }
+        <Text>{state.value ?? placeholder}</Text>
+        <Box bgColor="red">
+          {
+            React.Children.map(props.children, child => {
+              // Checking isValidElement is the safe way and avoids a typescript
+              // error too.
+              if (React.isValidElement(child)) {
+                return React.cloneElement(child, { handleClick: () => dispatch({type: "option", payload: child.props.value}) });
+              }
+              return child;
+            })
+          }
+        </Box>
+        
       </>
     </Flex>
   );
