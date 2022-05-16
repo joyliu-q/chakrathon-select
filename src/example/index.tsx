@@ -32,9 +32,10 @@ function Form() {
                     <Stack height="75%" spacing={6}>
                         <FormControl maxW="300px" maxH="300px">
                             <FormLabel htmlFor="heroes" fontWeight="600">S-Tier Heroes:</FormLabel>
-                            <Select name="heroes">
-                                <SelectOption value="">Select</SelectOption>
-                                <SelectOption value="1">One</SelectOption>
+                            <Select name="heroes" placeholder="One">
+                                <SelectOption value="Select">Select</SelectOption>
+                                <SelectOption value="One">One</SelectOption>
+                                <SelectOption value="Two">Two</SelectOption>
                             </Select>
                         </FormControl>
 
