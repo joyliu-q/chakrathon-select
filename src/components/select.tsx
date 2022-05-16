@@ -8,17 +8,73 @@ import {
   PropsOf,
   Stack,
   Text,
-  useBoolean,
+  useBoolean
 } from "@chakra-ui/react";
 import { AnimatePresence, HTMLMotionProps, motion, Variants } from "framer-motion";
-import React from "react";
+import React, {ReactElement} from "react";
+
+const editDistance = require('edit-distance');
+const remove = (node: any) => 1;
+const insert = remove;
+const update = function(stringA : string, stringB : string) { return stringA !== stringB ? 1 : 0; };
 
 // https://reactjs.org/docs/composition-vs-inheritance.html
 interface SelectProps extends InputProps {}
 
 const Select: React.FC<SelectProps> = ({ size, children }) => {
-  const selectedValue = "Option 1";
-  const [isOpen, setOpen] = useBoolean();
+  const [isOpen, setOpen] = React.useState(false);
+  const [searchText, setSearchText] = React.useState("");
+  const [selectedValue, setSelectedValue] = React.useState("Option 1");
+
+  const ref = React.useRef<HTMLDivElement>(null);
+  const selectRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    /**
+     * Alert if clicked on outside of element
+     */
+    function handleClickOutside(event: any) {
+      if (!selectRef.current || selectRef.current.contains(event.target)) {
+        setOpen(!isOpen);
+        return;
+      }
+
+      if (ref.current && !ref.current.contains(event.target)) {
+        setOpen(false);
+      } else if (ref.current !== null) {
+        setOpen(!isOpen);
+      }
+    }
+
+    function handleSearchText(event: any) {
+      console.log(event.target);
+      // setSearchText(searchText + event.target);
+    }
+
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleSearchText);
+
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleSearchText);
+
+    };
+  }, [ref, selectRef, isOpen]);
+
+  let childrenAsArray: ReactElement[] = [];
+  if (children !== null) {
+    childrenAsArray = children as ReactElement[];
+  }
+
+  if (searchText !== "") {
+      childrenAsArray.sort(function(a: ReactElement, b: ReactElement) {
+        const levA = editDistance.levenshtein(searchText, a, insert, remove, update);
+        const levB = editDistance.levenshtein(searchText, b, insert, remove, update);
+        return levA.distance - levB.distance;
+      })
+  }
 
   return (
     <Box position="relative">
@@ -36,7 +92,7 @@ const Select: React.FC<SelectProps> = ({ size, children }) => {
         _hover={{
           borderColor: "gray.300",
         }}
-        onClick={setOpen.toggle}
+        ref={selectRef}
       >
         <Text userSelect="none">{selectedValue}</Text>
         <SelectIcon isOpen={isOpen} />
@@ -67,8 +123,10 @@ const Select: React.FC<SelectProps> = ({ size, children }) => {
               opacity: 0,
               overflow: "hidden",
             }}
+            ref={ref}
           >
-            {children}
+            {childrenAsArray.map(child => React.cloneElement(child,
+                {...child.props, setSelectedValue: setSelectedValue}))}
           </Stack>
         )}
       </AnimatePresence>
@@ -134,24 +192,31 @@ const SelectIcon: React.FC<SelectIconProps> = (props) => {
   );
 };
 
-interface SelectOptionProps extends BoxProps{}
+interface SelectOptionProps extends BoxProps{
+  value?: string | null;
+  setSelectedValue?: (value : string | null) => void | undefined;
+}
 
 const SelectOption: React.FC<SelectOptionProps> = ({
   children,
+    value = children,
+    setSelectedValue,
   ...props
 }) => {
+
+  // ONCLICK doesnt work, maybe useEffect and ref?
   return (
-    <Box
-      px={4}
-      py={2}
-      transitionDuration="normal"
-      _hover={{
-        bg: "gray.100",
-      }}
-      {...props}
-    >
-      {children}
-    </Box>
+      <Box
+          px={4}
+          py={2}
+          transitionDuration="normal"
+          _hover={{
+            bg: "gray.100",
+          }}
+          {...props}
+      >
+        {children}
+      </Box>
   );
 };
 
