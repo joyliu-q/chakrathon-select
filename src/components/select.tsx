@@ -33,14 +33,16 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   } = omitThemingProps(props);
 
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   function reducer(_state: any, action: any) {
     switch (action.type) {
       case 'option':
+        setIsOpen(false);
         return {value: action.payload};
       case 'reset':
         return {value: action.payload} // TODO: pain
-        //return init(action.payload);
+          //return init(action.payload);
       default:
         throw new Error();
     }
@@ -48,6 +50,30 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
   const [state, dispatch] = React.useReducer(reducer, { value: placeholder ?? "Select" });
   
+  /*
+  1. Dropdown is open: clicking outside of the menu would close it
+  2. Dropdown is closed: clicking the text would open it
+  */
+
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    /**
+     * Alert if clicked on outside of element
+     */
+    function handleClickOutside(event: any) {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    }
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
+
   return (
     <Flex
       {...layoutProps}
@@ -55,19 +81,26 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       flexDir="column"
     >
       <>
-        <Text>{state.value ?? placeholder}</Text>
-        <Box bgColor="grey">
-          {
-            React.Children.map(props.children, child => {
-              // Checking isValidElement is the safe way and avoids a typescript
-              // error too.
-              if (React.isValidElement(child)) {
-                return React.cloneElement(child, { handleClick: () => dispatch({type: "option", payload: child.props.value}) });
-              }
-              return child;
-            })
-          }
-        </Box>
+        <Flex className="selectedItem" onClick={() => {setIsOpen(true)}}>
+          <Text>{state.value ?? placeholder}</Text>
+          {/* TODO chevron here*/}
+        </Flex>
+        {
+          isOpen ? 
+          <Box bgColor="grey" className="menu" ref={ref}>
+            {
+              React.Children.map(props.children, child => {
+                // Checking isValidElement is the safe way and avoids a typescript
+                // error too.
+                if (React.isValidElement(child)) {
+                  return React.cloneElement(child, { handleClick: () => dispatch({type: "option", payload: child.props.value}) });
+                }
+                return child;
+              })
+            }
+          </Box>
+          : <></>
+        }
         
       </>
     </Flex>
