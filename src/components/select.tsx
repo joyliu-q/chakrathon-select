@@ -46,7 +46,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     }
   }
 
-  const [state, dispatch] = React.useReducer(reducer, { value: placeholder ?? "" });
+  const [state, dispatch] = React.useReducer(reducer, { value: placeholder ?? "Select" });
   
   return (
     <Flex
@@ -56,7 +56,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     >
       <>
         <Text>{state.value ?? placeholder}</Text>
-        <Box bgColor="red">
+        <Box bgColor="grey">
           {
             React.Children.map(props.children, child => {
               // Checking isValidElement is the safe way and avoids a typescript
@@ -83,9 +83,14 @@ export const SelectOption: React.FC<SelectOptionProps> = (props) => {
   
   console.log(props);
   return (
-    <Flex onClick={() => { 
-      if (props.handleClick && props.value) {props.handleClick(props.value)};
-    }}>
+    <Flex 
+      onClick={() => { 
+        if (props.handleClick && props.value) {props.handleClick(props.value)};
+      }}
+      p={4}
+      m={1}
+      border="2px black solid"
+    >
       {children}
     </Flex>
   );
