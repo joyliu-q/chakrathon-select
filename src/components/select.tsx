@@ -1,130 +1,279 @@
-import { Flex, Text, Box } from "@chakra-ui/react";
+import {
+  Box,
+  chakra,
+  Flex,
+  HTMLChakraProps,
+  BoxProps,
+  InputProps,
+  PropsOf,
+  Stack,
+  Text,
+  useBoolean,
+} from "@chakra-ui/react";
+import {
+  AnimatePresence,
+  HTMLMotionProps,
+  motion,
+  Variants,
+} from "framer-motion";
+import React, { ReactElement } from "react";
 import {
   forwardRef,
   layoutPropNames,
   omitThemingProps,
-  HTMLChakraProps,
 } from "@chakra-ui/system";
 import { split } from "@chakra-ui/utils";
-import * as React from "react";
 
-type Omitted = "disabled" | "required" | "readOnly" | "size";
+const editDistance = require("edit-distance");
+const remove = (node: any) => 1;
+const insert = remove;
+const update = function (stringA: string, stringB: string) {
+  return stringA !== stringB ? 1 : 0;
+};
 
-export interface SelectFieldProps
-  extends Omit<HTMLChakraProps<"select">, Omitted> {
-  isDisabled?: boolean;
+// https://reactjs.org/docs/composition-vs-inheritance.html
+export interface SelectProps extends InputProps {
+  rootProps?: RootProps;
 }
 
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
-
-export interface SelectProps {
-  rootProps?: RootProps;
-}
 
 /**
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
+  const { size, children } = props;
 
-  const {
-    rootProps,
-    placeholder,
-    ...rest
-  } = omitThemingProps(props);
+  const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
+  const [isOpen, setOpen] = React.useState(true);
+  const [searchText, setSearchText] = React.useState("");
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
-  const [isOpen, setIsOpen] = React.useState(false);
 
   function reducer(_state: any, action: any) {
     switch (action.type) {
-      case 'option':
-        setIsOpen(false);
-        return {value: action.payload};
-      case 'reset':
-        return {value: action.payload} // TODO: pain
-          //return init(action.payload);
+      case "option":
+        setOpen(false);
+        return { value: action.payload };
       default:
         throw new Error();
     }
   }
 
-  const [state, dispatch] = React.useReducer(reducer, { value: placeholder ?? "Select" });
-  
-  /*
-  1. Dropdown is open: clicking outside of the menu would close it
-  2. Dropdown is closed: clicking the text would open it
-  */
+  const [state, dispatch] = React.useReducer(reducer, {
+    value: placeholder ?? "Select",
+  });
 
   const ref = React.useRef<HTMLDivElement>(null);
+  const selectRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     /**
      * Alert if clicked on outside of element
      */
-    function handleClickOutside(event: any) {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setIsOpen(false);
+    function handleClickOutside(event: MouseEvent) {
+      if(ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
       }
     }
+
+    function handleSearchText(event: any) {
+      // setSearchText(searchText + event.target);
+    }
+
     // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleSearchText);
+
     return () => {
       // Unbind the event listener on clean up
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleSearchText);
     };
-  }, [ref]);
+  }, [ref, selectRef, isOpen]);
+
+  let childrenAsArray: ReactElement[] = [];
+  if (children !== null) {
+    childrenAsArray = children as ReactElement[];
+  }
+
+  if (searchText !== "") {
+    childrenAsArray.sort(function (a: ReactElement, b: ReactElement) {
+      const levA = editDistance.levenshtein(
+        searchText,
+        a,
+        insert,
+        remove,
+        update
+      );
+      const levB = editDistance.levenshtein(
+        searchText,
+        b,
+        insert,
+        remove,
+        update
+      );
+      return levA.distance - levB.distance;
+    });
+  }
 
   return (
-    <Flex
-      {...layoutProps}
-      {...rootProps}
-      flexDir="column"
-    >
-      <>
-        <Flex className="selectedItem" onClick={() => {setIsOpen(true)}}>
-          <Text>{state.value ?? placeholder}</Text>
-          {/* TODO chevron here*/}
-        </Flex>
-        {
-          isOpen ? 
-          <Box bgColor="grey" className="menu" ref={ref}>
-            {
-              React.Children.map(props.children, child => {
-                // Checking isValidElement is the safe way and avoids a typescript
-                // error too.
-                if (React.isValidElement(child)) {
-                  return React.cloneElement(child, { handleClick: () => dispatch({type: "option", payload: child.props.value}) });
-                }
-                return child;
-              })
-            }
-          </Box>
-          : <></>
-        }
-        
-      </>
-    </Flex>
+    <Box position="relative" ref={ref}>
+      <Flex
+        w="full"
+        h={10}
+        pl={4}
+        pr={2}
+        borderRadius="md"
+        border="1px solid"
+        borderColor="gray.200"
+        align="center"
+        justify="space-between"
+        transitionDuration="normal"
+        _hover={{
+          borderColor: "gray.300",
+        }}
+        onClick={() => setOpen(!isOpen)}
+      >
+        <Text userSelect="none">{state.value ?? placeholder}</Text>
+        <SelectIcon isOpen={isOpen} />
+      </Flex>
+
+      <AnimatePresence>
+        {isOpen && (
+          <Stack
+            w="full"
+            as={motion.div}
+            position="absolute"
+            zIndex={1}
+            bg="white"
+            py={2}
+            border="1px solid"
+            borderColor="gray.200"
+            borderRadius="md"
+            initial={{
+              opacity: 0,
+              y: -20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 8,
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+              overflow: "hidden",
+            }}
+          >
+            {React.Children.map(props.children, (child) => {
+              // Checking isValidElement is the safe way and avoids a typescript
+              // error too.
+              if (React.isValidElement(child)) {
+                return React.cloneElement(child, {
+                  handleClick: (value: string) => {
+                    dispatch({
+                      type: "option",
+                      payload: value,
+                    });
+                  },
+                });
+              }
+              return child;
+            })}
+          </Stack>
+        )}
+      </AnimatePresence>
+    </Box>
   );
 });
 
-interface SelectOptionProps extends HTMLChakraProps<"option"> {
-  handleClick?: any;
+export const DefaultIcon: React.FC<PropsOf<"svg">> = (props) => (
+  <svg viewBox="0 0 24 24" {...props}>
+    <path
+      fill="currentColor"
+      d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"
+    />
+  </svg>
+);
+
+const IconWrapper = chakra(motion.div, {
+  baseStyle: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    pointerEvents: "none",
+    top: "50%",
+    width: "1.5rem",
+    height: "100%",
+    color: "currentColor",
+    fontSize: "1.25rem",
+    _disabled: {
+      opacity: 0.5,
+    },
+  },
+});
+
+interface SelectIconProps extends HTMLMotionProps<"div"> {
+  isOpen: boolean;
 }
 
-export const SelectOption: React.FC<SelectOptionProps> = (props) => {
-  const { children } = props;
-  
-  console.log(props);
+const variants: Variants = {
+  up: { rotate: 180 },
+  down: { rotate: 0 },
+};
+
+const SelectIcon: React.FC<SelectIconProps> = (props) => {
+  const { children = <DefaultIcon />, isOpen } = props;
+
+  const clone = React.cloneElement(children as any, {
+    role: "presentation",
+    className: "chakra-select__icon",
+    focusable: false,
+    "aria-hidden": true,
+    // force icon to adhere to `IconWrapper` styles
+    style: {
+      width: "1em",
+      height: "1em",
+      color: "currentColor",
+    },
+  });
+
   return (
-    <Flex 
-      onClick={() => { 
-        if (props.handleClick && props.value) {props.handleClick(props.value)};
+    <IconWrapper
+      animate={isOpen ? "up" : "down"}
+      variants={variants}
+      className="chakra-select__icon-wrapper"
+    >
+      {React.isValidElement(children) ? clone : null}
+    </IconWrapper>
+  );
+};
+
+interface SelectOptionProps extends BoxProps {
+  value?: string;
+  setSelectedValue?: (value: string | null) => void | undefined;
+  handleClick?: (value: string) => void;
+}
+
+export const SelectOption: React.FC<SelectOptionProps> = ({
+  children,
+  value = "",
+  handleClick = () => {},
+  ...props
+}) => {
+  
+  return (
+    <Box
+      onClick={() => handleClick(value)}
+      px={4}
+      py={2}
+      transitionDuration="normal"
+      _hover={{
+        bg: "gray.100",
       }}
-      p={4}
-      m={1}
-      border="2px black solid"
+      {...props}
     >
       {children}
-    </Flex>
+    </Box>
   );
 };
