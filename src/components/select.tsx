@@ -33,10 +33,12 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   } = omitThemingProps(props);
 
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   function reducer(_state: any, action: any) {
     switch (action.type) {
       case 'option':
+        setIsOpen(false);
         return {value: action.payload};
       case 'reset':
         return {value: action.payload} // TODO: pain
@@ -47,7 +49,6 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   }
 
   const [state, dispatch] = React.useReducer(reducer, { value: placeholder ?? "Select" });
-  const [isOpen, setIsOpen] = React.useState(false);
   
   /*
   1. Dropdown is open: clicking outside of the menu would close it
@@ -61,10 +62,8 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
      * Alert if clicked on outside of element
      */
     function handleClickOutside(event: any) {
-      console.log(typeof(event));
       if (ref.current && !ref.current.contains(event.target)) {
         setIsOpen(false);
-        alert("You clicked outside of me!");
       }
     }
     // Bind the event listener
@@ -82,7 +81,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       flexDir="column"
     >
       <>
-        <Flex className="selectedItem" onClick={() => setIsOpen(!isOpen)}>
+        <Flex className="selectedItem" onClick={() => {setIsOpen(true)}}>
           <Text>{state.value ?? placeholder}</Text>
           {/* TODO chevron here*/}
         </Flex>
