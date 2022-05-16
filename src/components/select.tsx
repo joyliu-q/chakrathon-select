@@ -53,6 +53,28 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   1. Dropdown is open: clicking outside of the menu would close it
   2. Dropdown is closed: clicking the text would open it
   */
+
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    /**
+     * Alert if clicked on outside of element
+     */
+    function handleClickOutside(event: any) {
+      console.log(typeof(event));
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+        alert("You clicked outside of me!");
+      }
+    }
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [ref]);
+
   return (
     <Flex
       {...layoutProps}
@@ -66,7 +88,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         </Flex>
         {
           isOpen ? 
-          <Box bgColor="grey" className="menu">
+          <Box bgColor="grey" className="menu" ref={ref}>
             {
               React.Children.map(props.children, child => {
                 // Checking isValidElement is the safe way and avoids a typescript
