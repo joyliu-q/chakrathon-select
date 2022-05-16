@@ -166,9 +166,9 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
                             // error too.
                             if (React.isValidElement(child)) {
                                 return React.cloneElement(child, {
-                                    handleClick: () => dispatch({
+                                    handleclick: (value: string) => dispatch({
                                         type: "option",
-                                        payload: child.props.value
+                                        payload: value
                                     })
                                 });
                             }
@@ -242,7 +242,7 @@ const SelectIcon: React.FC<SelectIconProps> = (props) => {
 interface SelectOptionProps extends BoxProps {
   value?: string | null;
   setSelectedValue?: (value: string | null) => void | undefined;
-  handleClick?: any;
+  handleclick?: any;
 }
 
 export const SelectOption: React.FC<SelectOptionProps> = ({
@@ -251,21 +251,22 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
   ...props
 }) => {
 
-  return (
-      <Box
-          onClick={() => {
-              if (props.handleClick && value) {props.handleClick(value)};
-          }}
-          px={4}
-          py={2}
-          transitionDuration="normal"
-          _hover={{
-            bg: "gray.100",
-          }}
-          {...props}
-      >
-        {children}
-      </Box>
-  );
+
+      return (
+          <Box
+              onClick={() => {
+                  if (props.handleclick && value) {props.handleclick(value)};
+              }}
+              px={4}
+              py={2}
+              transitionDuration="normal"
+              _hover={{
+                bg: "gray.100",
+              }}
+              {...props}
+          >
+            {children}
+          </Box>
+      );
 };
 
