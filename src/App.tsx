@@ -1,10 +1,10 @@
-import Demo from "./example";
 import { ChakraProvider } from "@chakra-ui/react";
+import Form from "./example";
 
 function App() {
   return (
     <ChakraProvider>
-      <Demo />
+      <Form />
     </ChakraProvider>
   );
 }
