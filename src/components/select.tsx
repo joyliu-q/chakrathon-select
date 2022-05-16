@@ -83,8 +83,17 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         }
 
         function handleSearchText(event: any) {
-            console.log(event.target);
-            // setSearchText(searchText + event.target);
+            console.log(event);
+            if (event.keyCode === 8) {
+                setSearchText(searchText.slice(0, -1));
+                console.log(searchText);
+                return;
+            }
+
+            if (event.keyCode >= 48 && event.keyCode <= 90) {
+                setSearchText(searchText + event.key);
+            }
+            console.log(searchText);
         }
 
         // Bind the event listener
@@ -106,8 +115,8 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
     if (searchText !== "") {
         childrenAsArray.sort(function (a: ReactElement, b: ReactElement) {
-            const levA = editDistance.levenshtein(searchText, a, insert, remove, update);
-            const levB = editDistance.levenshtein(searchText, b, insert, remove, update);
+            const levA = editDistance.levenshtein(searchText, a.props.children, insert, remove, update);
+            const levB = editDistance.levenshtein(searchText, b.props.children, insert, remove, update);
             return levA.distance - levB.distance;
         })
     }
