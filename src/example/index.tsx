@@ -5,22 +5,22 @@ import { useSelect } from "../hooks";
 import React from "react";
 
 function Form() {
-    const [value, setValue] = React.useState(null as string | null);
     
     const {
       // openAndFocusFirstItem,
       // openAndFocusLastItem,
       // buttonId,
       // selectId,
+      value,
       isOpen,
       onToggle,
       onOpen,
       onClose,
+      onClickOption,
       selectRef,
       selectButtonRef,
-      selectOptionsRef,
+      selectMenuRef,
     } = useSelect();
-    
 
     React.useEffect((): void => {
       console.log(onOpen);
@@ -43,10 +43,10 @@ function Form() {
         <Box ref={selectRef}>
           <Button ref={selectButtonRef} onClick={() => onToggle()}>{value ?? "Press to select!"}</Button>
           {isOpen ? 
-            <VStack>
-              <Button value="lol" onClick={() => onClose()}>Option 1</Button>
-              <Button value="xd" onClick={() => onClose()}>Option 2</Button>
-              <Button value="lmao" onClick={() => onClose()}>Option 3</Button>
+            <VStack ref={selectMenuRef}>
+              <Button value="lol" onClick={onClickOption}>Option 1</Button>
+              <Button value="xd" onClick={onClickOption}>Option 2</Button>
+              <Button value="lmao" onClick={onClickOption}>Option 3</Button>
             </VStack> 
           : null}
         </Box>

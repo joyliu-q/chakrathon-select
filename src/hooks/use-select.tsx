@@ -57,9 +57,17 @@ export function useSelect(props: UseSelectProps = {}) {
    */
   const selectRef = React.useRef<HTMLDivElement>(null)
   const selectButtonRef = React.useRef<HTMLButtonElement>(null)
-  const selectOptionsRef: React.RefObject<HTMLButtonElement>[] = []; // TODO: given selectRef, figure out which ones are the select options
+  const selectMenuRef = React.useRef<HTMLDivElement>(null) // TODO: given selectRef, figure out which ones are the select options
 
+  /**
+   * Whether the select is open or not
+   */
   const [isOpen, setIsOpen] = React.useState(false);
+
+  /**
+   * The value of the selected option item
+   */
+  const [value, setValue] = React.useState(null as string | null); 
 
   const onOpen = () => {
     setIsOpen(true);
@@ -71,6 +79,14 @@ export function useSelect(props: UseSelectProps = {}) {
     setIsOpen(!isOpen);
   }
 
+  // IM SORRY LOL I used type any again
+  const onClickOption = (e: any) => {
+    if (closeOnSelect) {
+      onClose();
+    }
+    setValue(e.target.value);
+  }
+
   const [focusedIndex, setFocusedIndex] = React.useState(-1)
 
   /**
@@ -79,15 +95,17 @@ export function useSelect(props: UseSelectProps = {}) {
   const [buttonId, selectId] = useIds(`select-button`, `select-list`)
 
   return {
+    value,
     buttonId,
     selectId,
     isOpen,
     onToggle,
     onOpen,
     onClose,
+    onClickOption,
     selectRef,
     selectButtonRef,
-    selectOptionsRef,
+    selectMenuRef,
     focusedIndex,
     closeOnSelect,
     closeOnBlur,
