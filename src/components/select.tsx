@@ -38,6 +38,9 @@ export interface SelectProps extends InputProps {
 
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
 
+type SelectChildType =
+    (string | number | React.ReactFragment | React.ReactElement<any, string | React.JSXElementConstructor<any>>);
+
 /**
  * React component used to select one item from a list of options.
  */
@@ -60,6 +63,31 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     }
   }
 
+  function compareByLevenshteinDistance(a: SelectChildType, b: SelectChildType) {
+    if (searchText === "") {
+      return 0;
+    }
+
+    const aVal = (a as ReactElement).props.children.toLowerCase();
+    const bVal = (b as ReactElement).props.children.toLowerCase();
+
+    const levA = editDistance.levenshtein(
+        searchText,
+        aVal,
+        insert,
+        remove,
+        update
+    );
+    const levB = editDistance.levenshtein(
+        searchText,
+        bVal,
+        insert,
+        remove,
+        update
+    );
+    return levA.distance - levB.distance;
+  }
+
   const [state, dispatch] = React.useReducer(reducer, {
     value: placeholder ?? "Select",
   });
@@ -68,30 +96,6 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const selectRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    let childrenAsArray: ReactElement[] = [];
-    if (children !== null) {
-      childrenAsArray = children as ReactElement[];
-    }
-
-    if (searchText !== "") {
-      childrenAsArray.sort(function (a: ReactElement, b: ReactElement) {
-        const levA = editDistance.levenshtein(
-          searchText,
-          a.props.children.toLowerCase(),
-          insert,
-          remove,
-          update
-        );
-        const levB = editDistance.levenshtein(
-          searchText,
-          b.props.children.toLowerCase(),
-          insert,
-          remove,
-          update
-        );
-        return levA.distance - levB.distance;
-      });
-    }
 
     function handleSearchText(event: KeyboardEvent) {
       const key = event.key;
@@ -136,7 +140,6 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
   return (
     <Box position="relative" ref={ref}>
-      {searchText}
       <Flex
         w="full"
         h={10}
@@ -197,7 +200,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
                 });
               }
               return child;
-            })}
+            })!.sort(compareByLevenshteinDistance)}
           </Stack>
         )}
       </AnimatePresence>
