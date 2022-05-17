@@ -50,10 +50,9 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
   const [isOpen, setOpen] = React.useState(false);
-  const [searchText, setSearchText] = React.useState<string>("");
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
-  function reducer(_state: any, action: any) {
+  function selectReducer(_state: any, action: any) {
     switch (action.type) {
       case "option":
         setOpen(false);
@@ -63,8 +62,29 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     }
   }
 
+  function searchReducer(state: string, action: number) {
+    const key = String.fromCharCode((96 <= action && action <= 105)? action - 48 : action);
+    console.log("Search Reducer");
+    if (key === "Esc" || key === "Escape") {
+      return "";
+    }
+
+    if (key.match(/^[a-zA-Z0-9]$/)) {
+      const letter = state.concat(key.toLowerCase());
+      return state + letter;
+    }
+
+    throw new Error();
+  }
+
+  const [selectState,selectDispatch] = React.useReducer(selectReducer, {
+    value: placeholder ?? "Select",
+  });
+
+  const [searchState, searchDispatch] = React.useReducer(searchReducer, "");
+
   function compareByLevenshteinDistance(a: SelectChildType, b: SelectChildType) {
-    if (searchText === "") {
+    if (searchState === "") {
       return 0;
     }
 
@@ -72,14 +92,14 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     const bVal = (b as ReactElement).props.children.toLowerCase();
 
     const levA = editDistance.levenshtein(
-        searchText,
+        searchState,
         aVal,
         insert,
         remove,
         update
     );
     const levB = editDistance.levenshtein(
-        searchText,
+        searchState,
         bVal,
         insert,
         remove,
@@ -88,35 +108,12 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     return levA.distance - levB.distance;
   }
 
-  const [state, dispatch] = React.useReducer(reducer, {
-    value: placeholder ?? "Select",
-  });
-
   const ref = React.useRef<HTMLDivElement>(null);
   const selectRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-
-    function handleSearchText(event: KeyboardEvent) {
-      const key = event.key;
-
-      if (key === "Esc" || key === "Escape") {
-        setSearchText(searchText.slice(0, -1));
-        return;
-      }
-
-      if (key.match(/^[a-zA-Z0-9]$/)) {
-        const newSearchText = searchText.concat(key);
-        setSearchText(newSearchText);
-      }
-    }
-
-    document.addEventListener("keydown", handleSearchText);
-
-    return () => {
-      document.removeEventListener("keydown", handleSearchText);
-    };
-  }, [searchText]);
+    console.log(searchState);
+  }, [searchState]);
 
 
   React.useEffect(() => {
@@ -156,7 +153,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         }}
         onClick={() => setOpen(!isOpen)}
       >
-        <Text userSelect="none">{state.value ?? placeholder}</Text>
+        <Text userSelect="none">{selectState.value ?? placeholder}</Text>
         <SelectIcon isOpen={isOpen} />
       </Flex>
 
@@ -192,11 +189,14 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
               if (React.isValidElement(child)) {
                 return React.cloneElement(child, {
                   handleClick: (value: string) => {
-                    dispatch({
+                    selectDispatch({
                       type: "option",
                       payload: value,
                     });
                   },
+                  handleKeyPress: (keyCode: number) => {
+                    searchDispatch(keyCode);
+                  }
                 });
               }
               return child;
@@ -274,18 +274,21 @@ interface SelectOptionProps extends BoxProps {
   value?: string;
   setSelectedValue?: (value: string | null) => void | undefined;
   handleClick?: (value: string) => void;
+  handleKeyPress?: (letter: number) => void;
 }
 
 export const SelectOption: React.FC<SelectOptionProps> = ({
   children,
   value = "",
   handleClick = () => {},
+  handleKeyPress = () => {},
   ...props
 }) => {
   
   return (
     <Box
       onClick={() => handleClick(value)}
+      onKeyPress={(event) => handleKeyPress(event.keyCode)}
       px={4}
       py={2}
       transitionDuration="normal"
