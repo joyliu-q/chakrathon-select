@@ -163,15 +163,30 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     function handleSearchText(event: KeyboardEvent) {
       if (isOpen) {
         const newSearchText = updateSearchText(event.key);
-        const childrenAsArray = (children as ReactElement[]).slice()
-            .sort((a, b) => compareByLevenshteinDistance(a, b, newSearchText));
-        dispatch({
-          type: SelectActionKind.OPTION_TYPED,
-          payload: {
-            value: childrenAsArray[0].props.value,
-            label: childrenAsArray[0].props.children,
+        const childrenAsArray = children as ReactElement[];
+
+        if (childrenAsArray.length > 0) {
+          let lowestDist : number = editDistance.levenshtein(newSearchText,
+            childrenAsArray[0].props.children, insert, remove, update).distance;
+          let lowIdx = 0;
+
+          for (let i = 1; i < childrenAsArray.length; i++) {
+            const currentDist : number = editDistance.levenshtein(newSearchText,
+                childrenAsArray[i].props.children, insert, remove, update).distance;
+            if (lowestDist > currentDist) {
+              lowestDist = currentDist;
+              lowIdx = i;
+            }
           }
-        });
+
+          dispatch({
+            type: SelectActionKind.OPTION_TYPED,
+            payload: {
+              value: childrenAsArray[lowIdx].props.value,
+              label: childrenAsArray[lowIdx].props.children,
+            }
+          });
+        }
       }
     }
 
