@@ -16,7 +16,7 @@ import {
   motion,
   Variants,
 } from "framer-motion";
-import React, { ReactElement } from "react";
+import React, { ReactElement, useReducer } from "react";
 import {
   forwardRef,
   layoutPropNames,
@@ -36,6 +36,23 @@ export interface SelectProps extends InputProps {
   rootProps?: RootProps;
 }
 
+enum SelectActionKind {
+  OPTION = "option",
+}
+
+interface SelectAction {
+  type: SelectActionKind;
+  payload: {
+    value: string;
+    label: React.ReactNode;
+  };
+}
+
+interface SelectState {
+  label: React.ReactNode;
+  value: string;
+}
+
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
 
 /**
@@ -50,18 +67,24 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const [searchText, setSearchText] = React.useState("");
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
-  function reducer(_state: any, action: any) {
-    switch (action.type) {
-      case "option":
+  function reducer(state: SelectState, action: SelectAction) {
+    const {
+      type,
+      payload: { value, label },
+    } = action;
+
+    switch (type) {
+      case SelectActionKind.OPTION:
         setOpen(false);
-        return { value: action.payload };
+        return { value, label };
       default:
         throw new Error();
     }
   }
 
-  const [state, dispatch] = React.useReducer(reducer, {
-    value: placeholder ?? "Select",
+  const [state, dispatch] = useReducer(reducer, {
+    label: placeholder,
+    value: "",
   });
 
   const ref = React.useRef<HTMLDivElement>(null);
@@ -135,7 +158,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         }}
         onClick={() => setOpen(!isOpen)}
       >
-        <Text userSelect="none">{state.value ?? placeholder}</Text>
+        <Text userSelect="none">{state.label}</Text>
         <SelectIcon isOpen={isOpen} />
       </Flex>
 
@@ -170,10 +193,13 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
               // error too.
               if (React.isValidElement(child)) {
                 return React.cloneElement(child, {
-                  handleClick: (value: string) => {
+                  handleClick: (value: string, label: React.ReactNode) => {
                     dispatch({
-                      type: "option",
-                      payload: value,
+                      type: SelectActionKind.OPTION,
+                      payload: {
+                        value,
+                        label,
+                      }
                     });
                   },
                 });
@@ -250,21 +276,21 @@ const SelectIcon: React.FC<SelectIconProps> = (props) => {
 };
 
 interface SelectOptionProps extends BoxProps {
-  value?: string;
+  value: string;
   setSelectedValue?: (value: string | null) => void | undefined;
-  handleClick?: (value: string) => void;
+  handleClick?: (value: string, label: React.ReactNode) => void;
 }
 
 export const SelectOption: React.FC<SelectOptionProps> = ({
   children,
-  value = "",
+  value,
   handleClick = () => {},
   ...props
 }) => {
   
   return (
     <Box
-      onClick={() => handleClick(value)}
+      onClick={() => handleClick(value, children)}
       px={4}
       py={2}
       transitionDuration="normal"
