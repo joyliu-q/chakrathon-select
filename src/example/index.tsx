@@ -31,7 +31,7 @@ function Form() {
         <Text>
           Custom Select (Component)
         </Text>
-        <Select>
+        <Select placeholder="Select an option">
           <SelectOption value="1">Option 1</SelectOption>
           <SelectOption value="2">Option 2</SelectOption>
           <SelectOption value="3">Option 3</SelectOption>
