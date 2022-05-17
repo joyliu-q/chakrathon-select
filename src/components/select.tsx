@@ -63,7 +63,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
-  const [isOpen, setOpen] = React.useState(true);
+  const [isOpen, setOpen] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
