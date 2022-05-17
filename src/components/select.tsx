@@ -16,7 +16,7 @@ import {
   motion,
   Variants,
 } from "framer-motion";
-import React, { ReactElement } from "react";
+import React, { ReactElement, useReducer } from "react";
 import {
   forwardRef,
   layoutPropNames,
@@ -36,6 +36,24 @@ export interface SelectProps extends InputProps {
   rootProps?: RootProps;
 }
 
+enum SelectActionKind {
+  OPTION = "option",
+  OPTION_TYPED = "option_type"
+}
+
+interface SelectAction {
+  type: SelectActionKind;
+  payload: {
+    value: string;
+    label: React.ReactNode;
+  };
+}
+
+interface SelectState {
+  label: React.ReactNode;
+  value: string;
+}
+
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
 
 type SelectChildType =
@@ -50,41 +68,34 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
   const [isOpen, setOpen] = React.useState(false);
+  const [searchText, setSearchText] = React.useState<string>("");
+
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
-  function selectReducer(_state: any, action: any) {
-    switch (action.type) {
-      case "option":
+  function reducer(state: SelectState, action: SelectAction) {
+    const {
+      type,
+      payload: { value, label },
+    } = action;
+
+    switch (type) {
+      case SelectActionKind.OPTION:
         setOpen(false);
-        return { value: action.payload };
+        return { value, label };
+      case SelectActionKind.OPTION_TYPED:
+        return { value, label };
       default:
         throw new Error();
     }
   }
 
-  function searchReducer(state: string, action: number) {
-    const key = String.fromCharCode((96 <= action && action <= 105)? action - 48 : action);
-    console.log("Search Reducer");
-    if (key === "Esc" || key === "Escape") {
-      return "";
-    }
-
-    if (key.match(/^[a-zA-Z0-9]$/)) {
-      const letter = state.concat(key.toLowerCase());
-      return state + letter;
-    }
-
-    throw new Error();
-  }
-
-  const [selectState,selectDispatch] = React.useReducer(selectReducer, {
-    value: placeholder ?? "Select",
+  const [state, dispatch] = useReducer(reducer, {
+    label: placeholder,
+    value: "",
   });
 
-  const [searchState, searchDispatch] = React.useReducer(searchReducer, "");
-
-  function compareByLevenshteinDistance(a: SelectChildType, b: SelectChildType) {
-    if (searchState === "") {
+  function compareByLevenshteinDistance(a: SelectChildType, b: SelectChildType, baseString = searchText) {
+    if (baseString === "") {
       return 0;
     }
 
@@ -92,14 +103,14 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     const bVal = (b as ReactElement).props.children.toLowerCase();
 
     const levA = editDistance.levenshtein(
-        searchState,
+        baseString,
         aVal,
         insert,
         remove,
         update
     );
     const levB = editDistance.levenshtein(
-        searchState,
+        baseString,
         bVal,
         insert,
         remove,
@@ -112,17 +123,13 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const selectRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    console.log(searchState);
-  }, [searchState]);
-
-
-  React.useEffect(() => {
     /**
      * Alert if clicked on outside of element
      */
     function handleClickOutside(event: MouseEvent) {
       if(ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
+        setSearchText("");
       }
     }
 
@@ -134,6 +141,77 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [ref, selectRef, isOpen]);
+
+  React.useEffect(() => {
+    function updateSearchText(key: string) {
+      let newSearchText = searchText;
+      if (key == "Backspace") {
+        newSearchText = searchText.slice(0, -1);
+      }
+
+      if (key === "Esc" || key === "Escape") {
+        newSearchText = "";
+      }
+
+      if (key.match(/^[a-zA-Z0-9\s+]$/)) {
+        newSearchText = searchText.concat(key.toLowerCase());
+      }
+
+      setSearchText(newSearchText);
+      return newSearchText;
+    }
+    function handleSearchText(event: KeyboardEvent) {
+      if (isOpen) {
+        const newSearchText = updateSearchText(event.key);
+        const childrenAsArray = (children as ReactElement[]).slice()
+            .sort((a, b) => compareByLevenshteinDistance(a, b, newSearchText));
+        dispatch({
+          type: SelectActionKind.OPTION_TYPED,
+          payload: {
+            value: childrenAsArray[0].props.value,
+            label: childrenAsArray[0].props.children,
+          }
+        });
+      }
+    }
+
+    document.addEventListener("keydown", handleSearchText);
+
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("keydown", handleSearchText);
+    };
+  }, [ref, isOpen, searchText]);
+
+  const renderedChildren = React.Children.map(props.children, (child) => {
+    // Checking isValidElement is the safe way and avoids a typescript
+    // error too.
+    if (React.isValidElement(child)) {
+      return React.cloneElement(child, {
+        handleClick: (value: string, label: React.ReactNode) => {
+          dispatch({
+            type: SelectActionKind.OPTION,
+            payload: {
+              value,
+              label,
+            }
+          });
+        }
+      });
+    }
+    return child;
+  });
+
+  if (searchText !== "") {
+    renderedChildren!.sort(compareByLevenshteinDistance);
+  }
+
+  const toggleIsOpen = () => {
+    setOpen(!isOpen);
+    if(!isOpen) {
+      setSearchText("");
+    }
+  }
 
   return (
     <Box position="relative" ref={ref}>
@@ -151,9 +229,10 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         _hover={{
           borderColor: "gray.300",
         }}
-        onClick={() => setOpen(!isOpen)}
+        onClick={toggleIsOpen}
       >
-        <Text userSelect="none">{selectState.value ?? placeholder}</Text>
+
+        <Text userSelect="none">{state.label}</Text>
         <SelectIcon isOpen={isOpen} />
       </Flex>
 
@@ -183,24 +262,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
               overflow: "hidden",
             }}
           >
-            {React.Children.map(props.children, (child) => {
-              // Checking isValidElement is the safe way and avoids a typescript
-              // error too.
-              if (React.isValidElement(child)) {
-                return React.cloneElement(child, {
-                  handleClick: (value: string) => {
-                    selectDispatch({
-                      type: "option",
-                      payload: value,
-                    });
-                  },
-                  handleKeyPress: (keyCode: number) => {
-                    searchDispatch(keyCode);
-                  }
-                });
-              }
-              return child;
-            })!.sort(compareByLevenshteinDistance)}
+            {renderedChildren}
           </Stack>
         )}
       </AnimatePresence>
@@ -271,33 +333,32 @@ const SelectIcon: React.FC<SelectIconProps> = (props) => {
 };
 
 interface SelectOptionProps extends BoxProps {
-  value?: string;
+  value: string;
   setSelectedValue?: (value: string | null) => void | undefined;
-  handleClick?: (value: string) => void;
   handleKeyPress?: (letter: number) => void;
+  handleClick?: (value: string, label: React.ReactNode) => void;
 }
 
 export const SelectOption: React.FC<SelectOptionProps> = ({
   children,
-  value = "",
+  value,
   handleClick = () => {},
   handleKeyPress = () => {},
   ...props
 }) => {
-  
+
   return (
-    <Box
-      onClick={() => handleClick(value)}
-      onKeyPress={(event) => handleKeyPress(event.keyCode)}
-      px={4}
-      py={2}
-      transitionDuration="normal"
-      _hover={{
-        bg: "gray.100",
-      }}
-      {...props}
-    >
-      {children}
-    </Box>
+      <Box
+          onClick={() => handleClick(value, children)}
+          px={4}
+          py={2}
+          transitionDuration="normal"
+          _hover={{
+            bg: "gray.100",
+          }}
+          {...props}
+      >
+        {children}
+      </Box>
   );
 };
