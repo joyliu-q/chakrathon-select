@@ -8,25 +8,23 @@ function Form() {
     const [value, setValue] = React.useState(null as string | null);
     
     const {
-      openAndFocusSelect,
       // openAndFocusFirstItem,
       // openAndFocusLastItem,
-      descendants,
       // buttonId,
       // selectId,
       isOpen,
-      // onToggle,
+      onToggle,
       onOpen,
       onClose,
       selectRef,
-      buttonRef,
+      selectButtonRef,
+      selectOptionsRef,
     } = useSelect();
     
 
     React.useEffect((): void => {
-      console.log(descendants);
       console.log(onOpen);
-    })
+    }, [isOpen])
 
     return (
       <Stack spacing={4} p={16}>
@@ -43,12 +41,12 @@ function Form() {
           Custom useSelect (Hook)
         </Text>
         <Box ref={selectRef}>
-          <Button ref={buttonRef} onClick={() => openAndFocusSelect}>{value ?? "Press to select!"}</Button>
+          <Button ref={selectButtonRef} onClick={() => onToggle()}>{value ?? "Press to select!"}</Button>
           {isOpen ? 
             <VStack>
-              <Button value="lol" onClick={() => openAndFocusSelect}>Option 1</Button>
-              <Button value="xd" onClick={() => openAndFocusSelect}>Option 2</Button>
-              <Button value="lmao" onClick={() => openAndFocusSelect}>Option 3</Button>
+              <Button value="lol" onClick={() => onClose()}>Option 1</Button>
+              <Button value="xd" onClick={() => onClose()}>Option 2</Button>
+              <Button value="lmao" onClick={() => onClose()}>Option 3</Button>
             </VStack> 
           : null}
         </Box>

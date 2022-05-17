@@ -27,7 +27,7 @@ import {
   normalizeEventKey,
 } from "@chakra-ui/utils"
 import * as React from "react"
-import { isTargetSelectItem } from "./use-select-item"
+// import { isTargetSelectItem } from "./use-select-item"
 
 /* -------------------------------------------------------------------------------------------------
  * Create context to track descendants and their indices
@@ -394,7 +394,7 @@ export function useSelectList(
    */
   const createTypeaheadHandler = useShortcut({
     preventDefault: (event) =>
-      event.key !== " " && isTargetSelectItem(event.target),
+      event.key !== " " /*&& isTargetSelectItem(event.target)*/,
   })
 
   const onKeyDown = React.useCallback(
@@ -439,9 +439,9 @@ export function useSelectList(
         }
       })
 
-      if (isTargetSelectItem(event.target)) {
+      /*if (isTargetSelectItem(event.target)) {
         onTypeahead(event)
-      }
+      }*/
     },
     [
       descendants,
