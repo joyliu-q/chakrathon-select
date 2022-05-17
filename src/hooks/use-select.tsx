@@ -11,7 +11,7 @@ import * as React from "react"
  * Create context to track select state and logic
  * -----------------------------------------------------------------------------------------------*/
 
-export interface UseSelectReturn extends ReturnType<typeof useSelect> {}
+export interface UseSelectReturn extends ReturnType<typeof useSelect> { }
 
 export const [SelectProvider, useSelectContext] = createContext<
   Omit<UseSelectReturn, "descendants">
@@ -67,7 +67,7 @@ export function useSelect(props: UseSelectProps = {}) {
   /**
    * The value of the selected option item
    */
-  const [value, setValue] = React.useState(null as string | null); 
+  const [value, setValue] = React.useState(null as string | null);
 
   const onOpen = () => {
     setIsOpen(true);

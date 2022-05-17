@@ -54,10 +54,10 @@ interface SelectState {
   value: string;
 }
 
-interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
+interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> { }
 
 type SelectChildType =
-    (string | number | React.ReactFragment | React.ReactElement<any, string | React.JSXElementConstructor<any>>);
+  (string | number | React.ReactFragment | React.ReactElement<any, string | React.JSXElementConstructor<any>>);
 
 /**
  * React component used to select one item from a list of options.
@@ -103,18 +103,18 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     const bVal = (b as ReactElement).props.children.toLowerCase();
 
     const levA = editDistance.levenshtein(
-        baseString,
-        aVal,
-        insert,
-        remove,
-        update
+      baseString,
+      aVal,
+      insert,
+      remove,
+      update
     );
     const levB = editDistance.levenshtein(
-        baseString,
-        bVal,
-        insert,
-        remove,
-        update
+      baseString,
+      bVal,
+      insert,
+      remove,
+      update
     );
     return levA.distance - levB.distance;
   }
@@ -127,7 +127,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
      * Alert if clicked on outside of element
      */
     function handleClickOutside(event: MouseEvent) {
-      if(ref.current && !ref.current.contains(event.target as Node)) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
         setSearchText("");
       }
@@ -166,13 +166,13 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         const childrenAsArray = children as ReactElement[];
 
         if (childrenAsArray.length > 0) {
-          let lowestDist : number = editDistance.levenshtein(newSearchText,
+          let lowestDist: number = editDistance.levenshtein(newSearchText,
             childrenAsArray[0].props.children, insert, remove, update).distance;
           let lowIdx = 0;
 
           for (let i = 1; i < childrenAsArray.length; i++) {
-            const currentDist : number = editDistance.levenshtein(newSearchText,
-                childrenAsArray[i].props.children, insert, remove, update).distance;
+            const currentDist: number = editDistance.levenshtein(newSearchText,
+              childrenAsArray[i].props.children, insert, remove, update).distance;
             if (lowestDist > currentDist) {
               lowestDist = currentDist;
               lowIdx = i;
@@ -223,7 +223,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
   const toggleIsOpen = () => {
     setOpen(!isOpen);
-    if(!isOpen) {
+    if (!isOpen) {
       setSearchText("");
     }
   }
@@ -357,23 +357,23 @@ interface SelectOptionProps extends BoxProps {
 export const SelectOption: React.FC<SelectOptionProps> = ({
   children,
   value,
-  handleClick = () => {},
-  handleKeyPress = () => {},
+  handleClick = () => { },
+  handleKeyPress = () => { },
   ...props
 }) => {
 
   return (
-      <Box
-          onClick={() => handleClick(value, children)}
-          px={4}
-          py={2}
-          transitionDuration="normal"
-          _hover={{
-            bg: "gray.100",
-          }}
-          {...props}
-      >
-        {children}
-      </Box>
+    <Box
+      onClick={() => handleClick(value, children)}
+      px={4}
+      py={2}
+      transitionDuration="normal"
+      _hover={{
+        bg: "gray.100",
+      }}
+      {...props}
+    >
+      {children}
+    </Box>
   );
 };
