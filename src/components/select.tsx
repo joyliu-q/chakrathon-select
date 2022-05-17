@@ -68,8 +68,52 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const selectRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    console.log(searchText + "AYOOOOOO");
+    let childrenAsArray: ReactElement[] = [];
+    if (children !== null) {
+      childrenAsArray = children as ReactElement[];
+    }
+
+    if (searchText !== "") {
+      childrenAsArray.sort(function (a: ReactElement, b: ReactElement) {
+        const levA = editDistance.levenshtein(
+          searchText,
+          a.props.children.toLowerCase(),
+          insert,
+          remove,
+          update
+        );
+        const levB = editDistance.levenshtein(
+          searchText,
+          b.props.children.toLowerCase(),
+          insert,
+          remove,
+          update
+        );
+        return levA.distance - levB.distance;
+      });
+    }
+
+    function handleSearchText(event: KeyboardEvent) {
+      const key = event.key;
+
+      if (key === "Esc" || key === "Escape") {
+        setSearchText(searchText.slice(0, -1));
+        return;
+      }
+
+      if (key.match(/^[a-zA-Z0-9]$/)) {
+        const newSearchText = searchText.concat(key);
+        setSearchText(newSearchText);
+      }
+    }
+
+    document.addEventListener("keydown", handleSearchText);
+
+    return () => {
+      document.removeEventListener("keydown", handleSearchText);
+    };
   }, [searchText]);
+
 
   React.useEffect(() => {
     /**
@@ -81,58 +125,18 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       }
     }
 
-    function handleSearchText(event: any) {
-      if (event.keyCode == 8) {
-        setSearchText(searchText.slice(0, -1));
-        return;
-      }
-      if (event.keyCode >= 48 && event.keyCode <= 90) {
-        const letter = event.key;
-        console.log(letter);
-        const copySearchText = searchText.slice() + letter;
-        setSearchText(copySearchText);
-      }
-      console.log(searchText);
-    }
-
     // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleSearchText);
 
     return () => {
       // Unbind the event listener on clean up
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleSearchText);
     };
   }, [ref, selectRef, isOpen]);
 
-  let childrenAsArray: ReactElement[] = [];
-  if (children !== null) {
-    childrenAsArray = children as ReactElement[];
-  }
-
-  if (searchText !== "") {
-    childrenAsArray.sort(function (a: ReactElement, b: ReactElement) {
-      const levA = editDistance.levenshtein(
-        searchText,
-        a.props.children.toLowerCase(),
-        insert,
-        remove,
-        update
-      );
-      const levB = editDistance.levenshtein(
-        searchText,
-        b.props.children.toLowerCase(),
-        insert,
-        remove,
-        update
-      );
-      return levA.distance - levB.distance;
-    });
-  }
-
   return (
     <Box position="relative" ref={ref}>
+      {searchText}
       <Flex
         w="full"
         h={10}
