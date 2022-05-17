@@ -6,6 +6,15 @@ Submission for the 2022 Chakrathon (Final Round).
 ### `placeholder` (optional)
 The placeholder value. Default is "Select".
 
+### TODO: `closeOnSelect` (optional)
+If `true`, the select dropdown will close when an option was chosen.
+
+Default is `true`. 
+
+### TODO: `closeOnSelect` (optional)
+If `true`, the select will close when you click outside the select list.
+
+Default is `true`. 
 ## SelectOption
 ### `value` (optional)
 The value of the select option. This is set to the children of select by default.
