@@ -9,6 +9,7 @@ import {
   useUnmountEffect,
   useUpdateEffect,
 } from "@chakra-ui/hooks"
+import { useAnimationState } from "@chakra-ui/hooks/use-animation-state"
 import { usePopper, UsePopperProps } from "@chakra-ui/popper"
 import {
   createContext,
@@ -21,6 +22,8 @@ import {
   determineLazyBehavior,
   focus,
   getNextItemFromSearch,
+  getOwnerDocument,
+  LazyBehavior,
   normalizeEventKey,
 } from "@chakra-ui/utils"
 import * as React from "react"
@@ -41,23 +44,12 @@ export const [
  * Create context to track select state and logic
  * -----------------------------------------------------------------------------------------------*/
 
-export interface UseSelectReturn extends ReturnType<typeof useSelect> {}
-
 export const [SelectProvider, useSelectContext] = createContext<
   Omit<UseSelectReturn, "descendants">
 >({
   strict: false,
   name: "SelectContext",
 })
-
-/* -------------------------------------------------------------------------------------------------
- * useSelectState: whether select is open or not
- * -----------------------------------------------------------------------------------------------*/
-
-export function useSelectState() {
-  const { isOpen, onClose } = useSelectContext()
-  return { isOpen, onClose }
-}
 
 /* -------------------------------------------------------------------------------------------------
  * useSelect hook
@@ -80,6 +72,44 @@ export interface UseSelectProps
    * @default true
    */
   closeOnBlur?: boolean
+  /**
+   * If `true`, the first enabled select item will receive focus and be selected
+   * when the select opens.
+   *
+   * @default true
+   */
+  autoSelect?: boolean
+  /**
+   * Performance 🚀:
+   * If `true`, the SelectItem rendering will be deferred
+   * until the select is open.
+   */
+  isLazy?: boolean
+  /**
+   * Performance 🚀:
+   * The lazy behavior of select's content when not visible.
+   * Only works when `isLazy={true}`
+   *
+   * - "unmount": The select's content is always unmounted when not open.
+   * - "keepMounted": The select's content initially unmounted,
+   * but stays mounted when select is open.
+   *
+   * @default "unmount"
+   */
+  lazyBehavior?: LazyBehavior
+  /**
+   * If `rtl`, poper placement positions will be flipped i.e. 'top-right' will
+   * become 'top-left' and vice-verse
+   */
+  direction?: "ltr" | "rtl"
+  /*
+   * If `true`, the select will be positioned when it mounts
+   * (even if it's not open).
+   *
+   * Note 🚨: We don't recommend using this in a select/popover intensive UI or page
+   * as it might affect scrolling performance.
+   */
+  computePositionOnMount?: boolean
 }
 
 /**
@@ -93,11 +123,16 @@ export function useSelect(props: UseSelectProps = {}) {
     id,
     closeOnSelect = true,
     closeOnBlur = true,
+    autoSelect = true,
+    isLazy,
     isOpen: isOpenProp,
     defaultIsOpen,
     onClose: onCloseProp,
     onOpen: onOpenProp,
     placement = "bottom-start",
+    lazyBehavior = "unmount",
+    direction,
+    computePositionOnMount = false,
     ...popperProps
   } = props
   /**
@@ -118,10 +153,30 @@ export function useSelect(props: UseSelectProps = {}) {
     })
   }, [])
 
+  const focusFirstItem = React.useCallback(() => {
+    const id = setTimeout(() => {
+      const first = descendants.firstEnabled()
+      if (first) setFocusedIndex(first.index)
+    })
+    timeoutIds.current.add(id)
+  }, [descendants])
+
+  const focusLastItem = React.useCallback(() => {
+    const id = setTimeout(() => {
+      const last = descendants.lastEnabled()
+      if (last) setFocusedIndex(last.index)
+    })
+    timeoutIds.current.add(id)
+  }, [descendants])
+
   const onOpenInternal = React.useCallback(() => {
     onOpenProp?.()
-    focusSelect()
-  }, [focusSelect, onOpenProp])
+    if (autoSelect) {
+      focusFirstItem()
+    } else {
+      focusSelect()
+    }
+  }, [autoSelect, focusFirstItem, focusSelect, onOpenProp])
 
   const { isOpen, onOpen, onClose, onToggle } = useDisclosure({
     isOpen: isOpenProp,
@@ -145,8 +200,9 @@ export function useSelect(props: UseSelectProps = {}) {
    */
   const popper = usePopper({
     ...popperProps,
-    enabled: isOpen,
+    enabled: isOpen || computePositionOnMount,
     placement,
+    direction,
   })
 
   const [focusedIndex, setFocusedIndex] = React.useState(-1)
@@ -166,6 +222,8 @@ export function useSelect(props: UseSelectProps = {}) {
     shouldFocus: true,
   })
 
+  const animationState = useAnimationState({ isOpen, ref: selectRef })
+
   /**
    * Generate unique ids for select's list and button
    */
@@ -183,12 +241,41 @@ export function useSelect(props: UseSelectProps = {}) {
     timeoutIds.current.clear()
   })
 
+  const openAndFocusFirstItem = React.useCallback(() => {
+    onOpen()
+    focusFirstItem()
+  }, [focusFirstItem, onOpen])
+
+  const openAndFocusLastItem = React.useCallback(() => {
+    onOpen()
+    focusLastItem()
+  }, [onOpen, focusLastItem])
+
+  const refocus = React.useCallback(() => {
+    const doc = getOwnerDocument(selectRef.current)
+    const hasFocusWithin = selectRef.current?.contains(doc.activeElement)
+    const shouldRefocus = isOpen && !hasFocusWithin
+
+    if (!shouldRefocus) return
+
+    const node = descendants.item(focusedIndex)?.node
+    if (node) {
+      focus(node, { selectTextIfInput: false, preventScroll: false })
+    }
+  }, [isOpen, focusedIndex, descendants])
+
   return {
     openAndFocusSelect,
+    openAndFocusFirstItem,
+    openAndFocusLastItem,
+    onTransitionEnd: refocus,
+    unstable__animationState: animationState,
     descendants,
     popper,
     buttonId,
     selectId,
+    forceUpdate: popper.forceUpdate,
+    orientation: "vertical",
     isOpen,
     onToggle,
     onOpen,
@@ -198,9 +285,14 @@ export function useSelect(props: UseSelectProps = {}) {
     focusedIndex,
     closeOnSelect,
     closeOnBlur,
+    autoSelect,
     setFocusedIndex,
+    isLazy,
+    lazyBehavior,
   }
 }
+
+export interface UseSelectReturn extends ReturnType<typeof useSelect> {}
 
 /* -------------------------------------------------------------------------------------------------
  * useSelectButton hook
@@ -220,7 +312,28 @@ export function useSelectButton(
   externalRef: React.Ref<any> = null,
 ) {
   const select = useSelectContext()
-  const { onToggle, popper } = select
+
+  const { onToggle, popper, openAndFocusFirstItem, openAndFocusLastItem } = select
+
+  const onKeyDown = React.useCallback(
+    (event: React.KeyboardEvent) => {
+      const eventKey = normalizeEventKey(event)
+      const keyMap: EventKeyMap = {
+        Enter: openAndFocusFirstItem,
+        ArrowDown: openAndFocusFirstItem,
+        ArrowUp: openAndFocusLastItem,
+      }
+
+      const action = keyMap[eventKey]
+
+      if (action) {
+        event.preventDefault()
+        event.stopPropagation()
+        action(event)
+      }
+    },
+    [openAndFocusFirstItem, openAndFocusLastItem],
+  )
 
   return {
     ...props,
@@ -231,6 +344,7 @@ export function useSelectButton(
     "aria-haspopup": "select" as React.AriaAttributes["aria-haspopup"],
     "aria-controls": select.selectId,
     onClick: callAllHandlers(props.onClick, onToggle),
+    onKeyDown: callAllHandlers(props.onKeyDown, onKeyDown),
   }
 }
 
@@ -267,6 +381,9 @@ export function useSelectList(
     isOpen,
     onClose,
     selectId,
+    isLazy,
+    lazyBehavior,
+    unstable__animationState: animated,
   } = select
 
   const descendants = useSelectDescendantsContext()
@@ -342,6 +459,9 @@ export function useSelectList(
 
   const shouldRenderChildren = determineLazyBehavior({
     hasBeenSelected: hasBeenOpened.current,
+    isLazy,
+    lazyBehavior,
+    isSelected: animated.present,
   })
 
   return {
@@ -358,4 +478,24 @@ export function useSelectList(
     "aria-orientation": "vertical" as React.AriaAttributes["aria-orientation"],
     onKeyDown: callAllHandlers(props.onKeyDown, onKeyDown),
   }
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * useSelectPosition: Composes usePopper to position the select
+ * -----------------------------------------------------------------------------------------------*/
+
+export function useSelectPositioner(props: any = {}) {
+  const { popper, isOpen } = useSelectContext()
+  return popper.getPopperProps({
+    ...props,
+    style: {
+      visibility: isOpen ? "visible" : "hidden",
+      ...props.style,
+    },
+  })
+}
+
+export function useSelectState() {
+  const { isOpen, onClose } = useSelectContext()
+  return { isOpen, onClose }
 }
