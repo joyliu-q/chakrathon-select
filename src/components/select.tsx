@@ -23,6 +23,7 @@ import {
   omitThemingProps,
 } from "@chakra-ui/system";
 import { split } from "@chakra-ui/utils";
+import { useSelect } from "../hooks";
 
 const editDistance = require("edit-distance");
 const remove = (node: any) => 1;
@@ -63,11 +64,22 @@ type SelectChildType =
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
+  const {
+    value,
+    isOpen,
+    onToggle,
+    onOpen,
+    onClose,
+    onClickOption,
+    selectRef,
+    selectButtonRef,
+    selectMenuRef,
+  } = useSelect();
+
   const { size, children } = props;
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
-  const [isOpen, setOpen] = React.useState(false);
   const [searchText, setSearchText] = React.useState<string>("");
 
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
@@ -80,7 +92,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
     switch (type) {
       case SelectActionKind.OPTION:
-        setOpen(false);
+        onClose();
         return { value, label };
       case SelectActionKind.OPTION_TYPED:
         return { value, label };
@@ -120,7 +132,6 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   }
 
   const ref = React.useRef<HTMLDivElement>(null);
-  const selectRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     /**
@@ -128,7 +139,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
      */
     function handleClickOutside(event: MouseEvent) {
       if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
+        onClose();
         setSearchText("");
       }
     }
@@ -222,7 +233,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   }
 
   const toggleIsOpen = () => {
-    setOpen(!isOpen);
+    onToggle();
     if (!isOpen) {
       setSearchText("");
     }
