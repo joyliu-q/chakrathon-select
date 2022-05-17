@@ -46,8 +46,8 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
-  const [isOpen, setOpen] = React.useState(true);
-  const [searchText, setSearchText] = React.useState("");
+  const [isOpen, setOpen] = React.useState(false);
+  const [searchText, setSearchText] = React.useState<string>("");
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
   function reducer(_state: any, action: any) {
@@ -68,6 +68,10 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const selectRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
+    console.log(searchText + "AYOOOOOO");
+  }, [searchText]);
+
+  React.useEffect(() => {
     /**
      * Alert if clicked on outside of element
      */
@@ -78,7 +82,17 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     }
 
     function handleSearchText(event: any) {
-      // setSearchText(searchText + event.target);
+      if (event.keyCode == 8) {
+        setSearchText(searchText.slice(0, -1));
+        return;
+      }
+      if (event.keyCode >= 48 && event.keyCode <= 90) {
+        const letter = event.key;
+        console.log(letter);
+        const copySearchText = searchText.slice() + letter;
+        setSearchText(copySearchText);
+      }
+      console.log(searchText);
     }
 
     // Bind the event listener
@@ -101,14 +115,14 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     childrenAsArray.sort(function (a: ReactElement, b: ReactElement) {
       const levA = editDistance.levenshtein(
         searchText,
-        a,
+        a.props.children.toLowerCase(),
         insert,
         remove,
         update
       );
       const levB = editDistance.levenshtein(
         searchText,
-        b,
+        b.props.children.toLowerCase(),
         insert,
         remove,
         update
