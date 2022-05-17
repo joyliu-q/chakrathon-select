@@ -43,7 +43,7 @@ function Form() {
         <Box ref={selectRef}>
           <Button ref={selectButtonRef} onClick={() => onToggle()}>{value ?? "Press to select!"}</Button>
           {isOpen ? 
-            <VStack ref={selectMenuRef}>
+            <VStack align="start" ref={selectMenuRef} py={2}>
               <Button value="lol" onClick={onClickOption}>Option 1</Button>
               <Button value="xd" onClick={onClickOption}>Option 2</Button>
               <Button value="lmao" onClick={onClickOption}>Option 3</Button>
