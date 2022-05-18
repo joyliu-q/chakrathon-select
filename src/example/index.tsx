@@ -124,10 +124,9 @@ function Form() {
                 S-Tier Heroes:
               </FormLabel>
               <Select name="heroes" placeholder="Select Hero">
-                <SelectOption value="Select">Blast</SelectOption>
-                <SelectOption value="One">Tornado of Terror</SelectOption>
-                <SelectOption value="Two">Silver Fang</SelectOption>
-
+                <SelectOption value="blast">Blast</SelectOption>
+                <SelectOption value="tornado">Tornado of Terror</SelectOption>
+                <SelectOption value="silver-fang">Silver Fang</SelectOption>
               </Select>
             </FormControl>
 
