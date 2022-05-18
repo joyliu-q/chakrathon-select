@@ -15,9 +15,13 @@ import {
   motion,
   Variants,
 } from "framer-motion";
-import React from "react";
-import { forwardRef, omitThemingProps } from "@chakra-ui/system";
+import React, {ReactElement} from "react";
+import {
+  forwardRef,
+  omitThemingProps,
+} from "@chakra-ui/system";
 import { useSelect } from "../hooks";
+import {getIdxLowestLevenshteinDistance, sortByLevenshteinDistance} from "../utils";
 
 // https://reactjs.org/docs/composition-vs-inheritance.html
 export interface SelectProps extends InputProps {
@@ -30,15 +34,68 @@ interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
-  const { state, getButtonProps, getMenuProps, getOptionProps } = useSelect();
+  const {
+    state,
+    getButtonProps,
+    getMenuProps,
+    getOptionProps,
+    setStateValue
+  } = useSelect();
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
+
+  const [searchText, setSearchText] = React.useState<string>("");
+
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function updateSearchText(key: string) {
+      let newSearchText = searchText;
+      if (key == "Backspace") {
+        newSearchText = searchText.slice(0, -1);
+      }
+
+      if (key === "Esc" || key === "Escape") {
+        newSearchText = "";
+      }
+
+      if (key.match(/^[a-zA-Z0-9\s+]$/)) {
+        newSearchText = searchText.concat(key.toLowerCase());
+      }
+
+      setSearchText(newSearchText);
+      return newSearchText;
+    }
+
+    function handleSearchText(event: KeyboardEvent) {
+      if (state.isOpen) {
+        const newSearchText = updateSearchText(event.key);
+        console.log(newSearchText);
+        const childrenAsArray = props.children as ReactElement[];
+        const lowestIdx = getIdxLowestLevenshteinDistance(childrenAsArray, newSearchText);
+        setStateValue(childrenAsArray[lowestIdx].props.value);
+      }
+    }
+
+    document.addEventListener("keydown", handleSearchText);
+
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("keydown", handleSearchText);
+    };
+  }, [ref, state.isOpen, searchText]);
 
   /**
    * Alert if clicked on outside of element
    */
 
-  const renderedChildren = React.Children.map(props.children, (child) => {
+  let displayChildren = props.children;
+
+  if (searchText !== "" && props.children) {
+    displayChildren = sortByLevenshteinDistance(props.children as ReactElement[], searchText);
+  }
+
+  const renderedChildren = React.Children.map(displayChildren, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
     // error too.
     if (React.isValidElement(child)) {
@@ -62,13 +119,14 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         align="center"
         justify="space-between"
         transitionDuration="normal"
+        ref={ref}
         _hover={{
           borderColor: "gray.300",
         }}
         {...getButtonProps}
       >
         {state.value ? <Text userSelect="none">{state.value}</Text> : <Text color="gray.300">{placeholder}</Text>}
-      <SelectIcon isOpen={state.isOpen} />
+        <SelectIcon isOpen={state.isOpen} />
       </Flex>
 
       <AnimatePresence>
@@ -98,7 +156,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
               overflow: "hidden",
             }}
           >
-            {renderedChildren}
+            {renderedChildren} {/* <-- update this */}
           </Stack>
         )}
       </AnimatePresence>
