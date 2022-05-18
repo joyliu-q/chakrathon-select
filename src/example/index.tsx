@@ -26,8 +26,29 @@ function Form() {
 
   return (
     <Stack spacing={4} p={16}>
-      <Text>Custom Select (Component)</Text>
-      <Select placeholder="Select an option">
+      <Text fontWeight={500}>Custom Select (Outline)</Text>
+      <Select variant="outline" placeholder="Select an option">
+        <SelectOption value="1">Option 1</SelectOption>
+        <SelectOption value="2">Option 2</SelectOption>
+        <SelectOption value="3">Option 3</SelectOption>
+        <SelectOption value="4">Option 4</SelectOption>
+      </Select>
+      <Text fontWeight={500}>Custom Select (Filled)</Text>
+      <Select variant="filled" placeholder="Select an option">
+        <SelectOption value="1">Option 1</SelectOption>
+        <SelectOption value="2">Option 2</SelectOption>
+        <SelectOption value="3">Option 3</SelectOption>
+        <SelectOption value="4">Option 4</SelectOption>
+      </Select>
+      <Text fontWeight={500}>Custom Select (Unstyled)</Text>
+      <Select variant="unstyled" placeholder="Select an option">
+        <SelectOption value="1">Option 1</SelectOption>
+        <SelectOption value="2">Option 2</SelectOption>
+        <SelectOption value="3">Option 3</SelectOption>
+        <SelectOption value="4">Option 4</SelectOption>
+      </Select>
+      <Text fontWeight={500}>Custom Select (Saitama)</Text>
+      <Select variant="saitama" placeholder="Select an option">
         <SelectOption value="1">Option 1</SelectOption>
         <SelectOption value="2">Option 2</SelectOption>
         <SelectOption value="3">Option 3</SelectOption>
@@ -35,7 +56,7 @@ function Form() {
       </Select>
       <Text>Custom useSelect (Hook)</Text>
       <Box>
-        <Box {...getButtonProps} bgColor="grey">{state.value === "" ? "Press to select!" : state.value}</Box>
+        <Box {...getButtonProps} bgColor="gray.300" textColor="white" p={2}>{state.value === "" ? "Press to select!" : state.value}</Box>
         {state.isOpen ?
           <VStack align="start" py={2} {...getMenuProps()}>
             <Button {...getOptionProps({ value: "one" })}>Option 1</Button>

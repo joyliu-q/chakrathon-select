@@ -21,11 +21,12 @@ import {
   omitThemingProps,
 } from "@chakra-ui/system";
 import { useSelect } from "../hooks";
-import {getIdxLowestLevenshteinDistance, sortByLevenshteinDistance} from "../utils";
+import {getIdxLowestLevenshteinDistance, SaitamaIcon, SelectVariant, sortByLevenshteinDistance, VARIANT_TO_SELECT_BUTTON_STYLE} from "../utils";
 
 // https://reactjs.org/docs/composition-vs-inheritance.html
 export interface SelectProps extends InputProps {
   rootProps?: RootProps;
+  variant?: SelectVariant
 }
 
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
@@ -34,6 +35,8 @@ interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
+  const variant = props.variant ?? "outline";
+
   const {
     state,
     getButtonProps,
@@ -111,22 +114,20 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       <Flex
         w="full"
         h={10}
-        pl={4}
-        pr={2}
         borderRadius="md"
-        border="1px solid"
-        borderColor="gray.200"
         align="center"
         justify="space-between"
         transitionDuration="normal"
         ref={ref}
-        _hover={{
-          borderColor: "gray.300",
-        }}
+        {...VARIANT_TO_SELECT_BUTTON_STYLE[variant]}
         {...getButtonProps}
       >
-        {state.value ? <Text userSelect="none">{state.value}</Text> : <Text color="gray.300">{placeholder}</Text>}
-        <SelectIcon isOpen={state.isOpen} />
+        {state.value ? <Text userSelect="none">{state.value}</Text> : <Text color={VARIANT_TO_SELECT_BUTTON_STYLE[variant].color ?? "gray.300"}>{placeholder}</Text>}
+        { 
+          variant === "saitama" ?
+          <SaitamaIcon /> :
+          <SelectIcon isOpen={state.isOpen} />
+        } 
       </Flex>
 
       <AnimatePresence>
@@ -231,6 +232,7 @@ interface SelectOptionProps extends BoxProps {
   setSelectedValue?: (value: string | null) => void | undefined;
   handleKeyPress?: (letter: number) => void;
   handleClick?: (value: string, label: React.ReactNode) => void;
+  variant?: SelectVariant;
 }
 
 export const SelectOption: React.FC<SelectOptionProps> = ({
@@ -238,8 +240,10 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
   value,
   handleClick = () => {},
   handleKeyPress = () => {},
+  variant = "outline",
   ...props
 }) => {
+  
   return (
     <Box
       onClick={() => handleClick(value, children)}
