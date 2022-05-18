@@ -90,10 +90,6 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     value: "",
   });
 
-
-
-
-
   const onClose = () => {
     setIsOpen(false);
   }
@@ -160,6 +156,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     if (props?.ref != null) {
       selectMenuRef = props.ref;
     }
+
     return {
       ref: selectMenuRef,
     }
