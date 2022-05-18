@@ -115,7 +115,6 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     (event: MouseEvent) => {
       // If closeOnBlur is false, we don't close when clicked outside
 
-
       if (!closeOnBlur) {
         return;
       }
