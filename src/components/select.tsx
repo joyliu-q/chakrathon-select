@@ -15,12 +15,13 @@ import {
   motion,
   Variants,
 } from "framer-motion";
-import React from "react";
+import React, {ReactElement} from "react";
 import {
   forwardRef,
   omitThemingProps,
 } from "@chakra-ui/system";
 import { useSelect } from "../hooks";
+import {getIdxLowestLevenshteinDistance, sortByLevenshteinDistance} from "../utils";
 
 // https://reactjs.org/docs/composition-vs-inheritance.html
 export interface SelectProps extends InputProps {
@@ -45,69 +46,56 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
   const [searchText, setSearchText] = React.useState<string>("");
 
-  function updateSearchText(key: string) {
-    let newSearchText = searchText;
-    if (key == "Backspace") {
-      newSearchText = searchText.slice(0, -1);
-    }
+  const ref = React.useRef<HTMLDivElement>(null);
 
-    if (key === "Esc" || key === "Escape") {
-      newSearchText = "";
-    }
-
-    if (key.match(/^[a-zA-Z0-9\s+]$/)) {
-      newSearchText = searchText.concat(key.toLowerCase());
-    }
-
-    setSearchText(newSearchText);
-    return newSearchText;
-  }
-
-  const handleSearchText = React.useCallback((event: KeyboardEvent) => {
-    console.log((selectMenuRef.current as any).childNodes);
-
-    if (isOpen && node) {
-
-      const newSearchText = updateSearchText(event.key);
-      const children = node.current?.childNodes;
-
-      if (children == null || children == undefined) {
-        return;
+  React.useEffect(() => {
+    function updateSearchText(key: string) {
+      let newSearchText = searchText;
+      if (key == "Backspace") {
+        newSearchText = searchText.slice(0, -1);
       }
 
-      let childrenAsArray = [];
-
-      for (let i = 0; i < children!.length; i++) {
-        childrenAsArray[i] = children.item(i);
+      if (key === "Esc" || key === "Escape") {
+        newSearchText = "";
       }
-      console.log(childrenAsArray);
 
-      if (childrenAsArray.length > 0) {
-        let lowestDist: number = editDistance.levenshtein(newSearchText,
-            childrenAsArray[0]!.childNodes, insert, remove, update).distance;
-        let lowIdx = 0;
+      if (key.match(/^[a-zA-Z0-9\s+]$/)) {
+        newSearchText = searchText.concat(key.toLowerCase());
+      }
 
-        for (let i = 1; i < childrenAsArray.length; i++) {
-          const currentDist: number = editDistance.levenshtein(newSearchText,
-              childrenAsArray[i]!.childNodes, insert, remove, update).distance;
-          if (lowestDist > currentDist) {
-            lowestDist = currentDist;
-            lowIdx = i;
-          }
-        }
+      setSearchText(newSearchText);
+      return newSearchText;
+    }
 
-        setStateValue(childrenAsArray[lowIdx].value);
-        // TODO: fix labels
-        // label: lowIdx //childrenAsArray[lowIdx].children,
+    function handleSearchText(event: KeyboardEvent) {
+      if (state.isOpen) {
+        const newSearchText = updateSearchText(event.key);
+        console.log(newSearchText);
+        const childrenAsArray = props.children as ReactElement[];
+        const lowestIdx = getIdxLowestLevenshteinDistance(childrenAsArray, newSearchText);
+        setStateValue(childrenAsArray[lowestIdx].props.value);
       }
     }
-  }, [searchText]);
+
+    document.addEventListener("keydown", handleSearchText);
+
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("keydown", handleSearchText);
+    };
+  }, [ref, state.isOpen, searchText]);
 
   /**
     * Alert if clicked on outside of element
   */
 
-  const renderedChildren = React.Children.map(props.children, (child) => {
+  let displayChildren = props.children;
+
+  if (searchText !== "" && props.children) {
+    displayChildren = sortByLevenshteinDistance(props.children as ReactElement[], searchText);
+  }
+
+  const renderedChildren = React.Children.map(displayChildren, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
     // error too.
     if (React.isValidElement(child)) {
@@ -131,6 +119,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         align="center"
         justify="space-between"
         transitionDuration="normal"
+        ref={ref}
         _hover={{
           borderColor: "gray.300",
         }}
