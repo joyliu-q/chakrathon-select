@@ -8,7 +8,6 @@ import {
   PropsOf,
   Stack,
   Text,
-  useBoolean,
 } from "@chakra-ui/react";
 import {
   AnimatePresence,
@@ -16,7 +15,7 @@ import {
   motion,
   Variants,
 } from "framer-motion";
-import React, { ReactElement, useReducer } from "react";
+import React from "react";
 import {
   forwardRef,
   layoutPropNames,
@@ -25,222 +24,50 @@ import {
 import { split } from "@chakra-ui/utils";
 import { useSelect } from "../hooks";
 
-const editDistance = require("edit-distance");
-const remove = (node: any) => 1;
-const insert = remove;
-const update = function (stringA: string, stringB: string) {
-  return stringA !== stringB ? 1 : 0;
-};
-
 // https://reactjs.org/docs/composition-vs-inheritance.html
 export interface SelectProps extends InputProps {
   rootProps?: RootProps;
 }
 
-enum SelectActionKind {
-  OPTION = "option",
-  OPTION_TYPED = "option_type"
-}
-
-interface SelectAction {
-  type: SelectActionKind;
-  payload: {
-    value: string;
-    label: React.ReactNode;
-  };
-}
-
-interface SelectState {
-  label: React.ReactNode;
-  value: string;
-}
-
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> { }
-
-type SelectChildType =
-  (string | number | React.ReactFragment | React.ReactElement<any, string | React.JSXElementConstructor<any>>);
 
 /**
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const {
-    value,
-    isOpen,
-    onToggle,
-    onOpen,
-    onClose,
-    onClickOption,
-    selectRef,
-    selectButtonRef,
-    selectMenuRef,
+    state, 
+    getButtonProps,
+    getOptionProps,
   } = useSelect();
 
   const { size, children } = props;
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
-  const [searchText, setSearchText] = React.useState<string>("");
-
   const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
-  function reducer(state: SelectState, action: SelectAction) {
-    const {
-      type,
-      payload: { value, label },
-    } = action;
+  /**
+    * Alert if clicked on outside of element
+  */
 
-    switch (type) {
-      case SelectActionKind.OPTION:
-        onClose();
-        return { value, label };
-      case SelectActionKind.OPTION_TYPED:
-        return { value, label };
-      default:
-        throw new Error();
-    }
-  }
-
-  const [state, dispatch] = useReducer(reducer, {
-    label: placeholder,
-    value: "",
-  });
-
-  function compareByLevenshteinDistance(a: SelectChildType, b: SelectChildType, baseString = searchText) {
-    if (baseString === "") {
-      return 0;
-    }
-
-    const aVal = (a as ReactElement).props.children.toLowerCase();
-    const bVal = (b as ReactElement).props.children.toLowerCase();
-
-    const levA = editDistance.levenshtein(
-      baseString,
-      aVal,
-      insert,
-      remove,
-      update
-    );
-    const levB = editDistance.levenshtein(
-      baseString,
-      bVal,
-      insert,
-      remove,
-      update
-    );
-    return levA.distance - levB.distance;
-  }
-
-  const ref = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    /**
-     * Alert if clicked on outside of element
-     */
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        onClose();
-        setSearchText("");
-      }
-    }
-
-    // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, selectRef, isOpen]);
-
-  React.useEffect(() => {
-    function updateSearchText(key: string) {
-      let newSearchText = searchText;
-      if (key == "Backspace") {
-        newSearchText = searchText.slice(0, -1);
-      }
-
-      if (key === "Esc" || key === "Escape") {
-        newSearchText = "";
-      }
-
-      if (key.match(/^[a-zA-Z0-9\s+]$/)) {
-        newSearchText = searchText.concat(key.toLowerCase());
-      }
-
-      setSearchText(newSearchText);
-      return newSearchText;
-    }
-    function handleSearchText(event: KeyboardEvent) {
-      if (isOpen) {
-        const newSearchText = updateSearchText(event.key);
-        const childrenAsArray = children as ReactElement[];
-
-        if (childrenAsArray.length > 0) {
-          let lowestDist: number = editDistance.levenshtein(newSearchText,
-            childrenAsArray[0].props.children, insert, remove, update).distance;
-          let lowIdx = 0;
-
-          for (let i = 1; i < childrenAsArray.length; i++) {
-            const currentDist: number = editDistance.levenshtein(newSearchText,
-              childrenAsArray[i].props.children, insert, remove, update).distance;
-            if (lowestDist > currentDist) {
-              lowestDist = currentDist;
-              lowIdx = i;
-            }
-          }
-
-          dispatch({
-            type: SelectActionKind.OPTION_TYPED,
-            payload: {
-              value: childrenAsArray[lowIdx].props.value,
-              label: childrenAsArray[lowIdx].props.children,
-            }
-          });
-        }
-      }
-    }
-
-    document.addEventListener("keydown", handleSearchText);
-
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("keydown", handleSearchText);
-    };
-  }, [ref, isOpen, searchText]);
+  // hi bog hi
 
   const renderedChildren = React.Children.map(props.children, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
     // error too.
     if (React.isValidElement(child)) {
+      console.log(child)
       return React.cloneElement(child, {
-        handleClick: (value: string, label: React.ReactNode) => {
-          dispatch({
-            type: SelectActionKind.OPTION,
-            payload: {
-              value,
-              label,
-            }
-          });
-        }
+        ...getOptionProps({ value: child.props.value }),
       });
     }
+    console.log(child)
     return child;
   });
 
-  if (searchText !== "") {
-    renderedChildren!.sort(compareByLevenshteinDistance);
-  }
-
-  const toggleIsOpen = () => {
-    onToggle();
-    if (!isOpen) {
-      setSearchText("");
-    }
-  }
-
   return (
-    <Box position="relative" ref={ref}>
+    <Box position="relative">
       <Flex
         w="full"
         h={10}
@@ -255,15 +82,15 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         _hover={{
           borderColor: "gray.300",
         }}
-        onClick={toggleIsOpen}
+        {...getButtonProps}
       >
 
-        <Text userSelect="none">{state.label}</Text>
-        <SelectIcon isOpen={isOpen} />
+        <Text userSelect="none">{state.value}</Text>
+        <SelectIcon isOpen={state.isOpen} />
       </Flex>
 
       <AnimatePresence>
-        {isOpen && (
+        {state.isOpen && (
           <Stack
             w="full"
             as={motion.div}
