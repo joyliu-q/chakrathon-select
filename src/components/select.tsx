@@ -76,7 +76,9 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         console.log(newSearchText);
         const childrenAsArray = props.children as ReactElement[];
         const lowestIdx = getIdxLowestLevenshteinDistance(childrenAsArray, newSearchText);
-        setStateValue(childrenAsArray[lowestIdx].props.value);
+        const bestMatchProps = childrenAsArray[lowestIdx].props
+        const bestMatch = childrenAsArray[lowestIdx];
+        setStateValue(bestMatchProps.value, bestMatch);
       }
     }
 

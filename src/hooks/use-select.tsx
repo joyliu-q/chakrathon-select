@@ -137,8 +137,15 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     }
   }, [selectMenuRef, isOpen, handleClickOutside]);
 
+
+
   const getOptionProps = ({ value }: { value: string }) => {
-    const optionId = `option-${value}`;
+
+    const makeRandomId = () => {
+      return Math.random().toString(36).substring(5);
+    }
+
+    const optionId = `option-${value}-${makeRandomId()}`;
 
     return {
       id: optionId,
@@ -175,12 +182,14 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     };
   };
 
-  const setStateValue = (value: string) => {
+  const setStateValue = (value: string, element?: React.ReactElement) => {
+    const label = element?.props.children ?? value;
+    
     dispatch({
       type: SelectActionKind.OPTION,
       payload: {
         value,
-        label: value
+        label
       }
     });
   }
