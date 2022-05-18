@@ -5,6 +5,7 @@ export interface UseSelectReturn {
   getButtonProps: GetSelectButtonProps;
   getMenuProps: (props?: GetSelectMenuOptions) => GetSelectMenuProps;
   getOptionProps: ({ value }: { value: string }) => GetSelectOptionProps;
+  setStateValue: (value: string) => void;
 }
 
 export type GetSelectMenuOptions = {

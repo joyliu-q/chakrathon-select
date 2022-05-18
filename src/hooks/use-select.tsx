@@ -2,13 +2,6 @@ import { useIds } from "@chakra-ui/hooks";
 import * as React from "react";
 import { GetSelectMenuOptions, UseSelectReturn } from "../type";
 
-const editDistance = require("edit-distance");
-const remove = (_node: any) => 1;
-const insert = remove;
-const update = function (stringA: string, stringB: string) {
-  return stringA !== stringB ? 1 : 0;
-};
-
 enum SelectActionKind {
   OPTION = "option",
   OPTION_TYPED = "option_type",
@@ -73,7 +66,6 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   /**
    * Typeahead: the current text being searched
    */
-  const [searchText, setSearchText] = React.useState<string>("");
 
   function reducer(_state: SelectState, action: SelectAction) {
     const {
@@ -96,100 +88,12 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     value: "",
   });
 
-  const updateSearchText = React.useCallback((key: string) => {
-    let newSearchText = searchText;
-    if (key === "Backspace") {
-      newSearchText = searchText.slice(0, -1);
-    }
-
-    if (key === "Esc" || key === "Escape") {
-      newSearchText = "";
-    }
-
-    if (key.match(/^[a-zA-Z0-9\s+]$/)) {
-      newSearchText = searchText.concat(key.toLowerCase());
-    }
-
-    setSearchText(newSearchText);
-    return newSearchText;
-  }, [searchText]);
-
-  const handleSearchText = React.useCallback(
-    (event: KeyboardEvent) => {
-      /**
-       * Steps to handle the search text
-       * 1. Figure out what the current search text is
-       * 2. Find the list of ReactElements inside the selectMenuRef
-       * 3. Sort the list of ReactElements given the search text,
-       * 4. Render the list of select options
-       *
-       * When sorting, we should still maintain a copy of the original ReactElements & their order
-       * We use this copy of original ReactElements whenever we want to handleSearchText
-       */
-
-      const node = selectMenuRef;
-
-      console.log((selectMenuRef.current as any).childNodes);
-
-      if (isOpen && node) {
-        const newSearchText = updateSearchText(event.key);
-        const children = node.current?.childNodes;
-
-        if (children === null || children === undefined) {
-          return;
-        }
-
-        let childrenAsArray = [];
-
-        for (let i = 0; i < children!.length; i++) {
-          childrenAsArray[i] = children.item(i);
-        }
-        console.log(childrenAsArray);
-
-        if (childrenAsArray.length > 0) {
-          let lowestDist: number = editDistance.levenshtein(
-            newSearchText,
-            childrenAsArray[0]!.childNodes,
-            insert,
-            remove,
-            update
-          ).distance;
-          let lowIdx = 0;
-
-          for (let i = 1; i < childrenAsArray.length; i++) {
-            const currentDist: number = editDistance.levenshtein(
-              newSearchText,
-              childrenAsArray[i]!.childNodes,
-              insert,
-              remove,
-              update
-            ).distance;
-            if (lowestDist > currentDist) {
-              lowestDist = currentDist;
-              lowIdx = i;
-            }
-          }
-
-          dispatch({
-            type: SelectActionKind.OPTION_TYPED,
-            payload: {
-              value: "hi", //childrenAsArray[lowIdx]?.value,
-              label: lowIdx, //childrenAsArray[lowIdx]?.children,
-            },
-          });
-        }
-      }
-    },
-    [isOpen, updateSearchText]
-  );
-
   const onClose = () => {
     setIsOpen(false);
   };
   const onToggle = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
-      setSearchText("");
     }
   };
 
@@ -219,7 +123,6 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
         !selectMenuRef.current.contains(event.target as Node)
       ) {
         onClose();
-        setSearchText("");
       }
     },
     [selectMenuRef, closeOnBlur]
@@ -232,15 +135,6 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
       document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [selectMenuRef, isOpen, handleClickOutside]);
-
-  React.useEffect(() => {
-    document.addEventListener("keydown", handleSearchText);
-
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("keydown", handleSearchText);
-    };
-  }, [isOpen, searchText, selectMenuRef, handleSearchText]);
 
   const getOptionProps = ({ value }: { value: string }) => {
     return {
@@ -265,11 +159,21 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     if (props?.ref != null) {
       selectMenuRef = props.ref;
     }
-    console.log(props);
+
     return {
       ref: selectMenuRef,
     };
   };
+
+  const setStateValue = (value: string) => {
+    dispatch({
+      type: SelectActionKind.OPTION,
+      payload: {
+        value,
+        label: value
+      }
+    });
+  }
 
   return {
     state: {
@@ -282,6 +186,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     },
     getMenuProps,
     getOptionProps,
+    setStateValue
     // handleSearchText,
     // handleClickOutside,
     // getRenderedChildren,
