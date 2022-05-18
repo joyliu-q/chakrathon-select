@@ -66,7 +66,6 @@ The hook offers 4 key returns:
 ```
 
 ## Complete Example: Forms
-
 ```javascript
 import {
   Box,
@@ -115,7 +114,6 @@ export default Form;
 ```
 
 # Customization
-
 For full customization, we recommend developers to use our `useSelect` hook.
 
 However, our `<Select/>` component does offer benefits such as Typeahead and keyboard support for selecting an option.
@@ -125,13 +123,11 @@ To further customize the component, we support all base chakra component properi
 # <a name="props"></a> Prop Table
 
 ## `<Select/>`
-
 ### `placeholder` (optional)
 
 The placeholder value. Default is "Select".
 
 ### `closeOnSelect` (optional)
-
 If `true`, the select dropdown will close when an option was chosen.
 
 Default is `true`.
