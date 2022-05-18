@@ -123,10 +123,11 @@ function Form() {
               <FormLabel htmlFor="heroes" fontWeight="600">
                 S-Tier Heroes:
               </FormLabel>
-              <Select name="heroes" placeholder="One">
-                <SelectOption value="Select">Select</SelectOption>
-                <SelectOption value="One">One</SelectOption>
-                <SelectOption value="Two">Two</SelectOption>
+              <Select name="heroes" placeholder="Select Hero">
+                <SelectOption value="Select">Blast</SelectOption>
+                <SelectOption value="One">Tornado of Terror</SelectOption>
+                <SelectOption value="Two">Silver Fang</SelectOption>
+
               </Select>
             </FormControl>
 
