@@ -138,10 +138,8 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
             as={motion.div}
             position="absolute"
             zIndex={1}
-            bg="white"
+            {...VARIANT_TO_SELECT_BUTTON_STYLE[variant]}
             py={2}
-            border="1px solid"
-            borderColor="gray.200"
             borderRadius="md"
             initial={{
               opacity: 0,

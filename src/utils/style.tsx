@@ -13,6 +13,7 @@ export const VARIANT_TO_SELECT_BUTTON_STYLE: Record<SelectVariant, any> = {
     color: "gray.400",
     pl: 4,
     pr: 2,
+    bg: "white"
   },
   filled: {
     bg: "gray.100",
