@@ -123,6 +123,12 @@ However, our `<Select/>` component does offer benefits such as Typeahead and key
 
 To further customize the component, we support all base chakra component properities, including padding, margins, etc.
 
+## Variants
+- `outline` (default)
+- `filled`
+- `unstyled`
+- `saitama`
+
 # <a name="props"></a> Prop Table
 
 ## `<Select/>`
