@@ -26,7 +26,6 @@ function Form() {
     isOpen,
     onToggle,
     onOpen,
-    onClose,
     onClickOption,
     selectRef,
     selectButtonRef,
@@ -35,7 +34,7 @@ function Form() {
 
   React.useEffect((): void => {
     console.log(onOpen);
-  }, [isOpen]);
+  }, [isOpen, onOpen]);
 
   return (
     <Stack spacing={4} p={16}>

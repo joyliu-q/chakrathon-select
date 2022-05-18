@@ -13,7 +13,6 @@
     "pre-compile": "npx projen pre-compile",
     "test": "npx projen test",
     "upgrade": "npx projen upgrade",
-    "upgrade-projen": "npx projen upgrade-projen",
     "watch": "npx projen watch",
     "projen": "npx projen"
   },
@@ -22,7 +21,7 @@
     "@testing-library/react": "^13.2.0",
     "@testing-library/user-event": "*",
     "@types/jest": "^27.5.1",
-    "@types/node": "^12",
+    "@types/node": "^14",
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.0.4",
     "npm-check-updates": "^12",

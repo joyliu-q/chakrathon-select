@@ -18,13 +18,11 @@ import {
 import React, { ReactElement, useReducer } from "react";
 import {
   forwardRef,
-  layoutPropNames,
   omitThemingProps,
 } from "@chakra-ui/system";
-import { split } from "@chakra-ui/utils";
 
 const editDistance = require("edit-distance");
-const remove = (node: any) => 1;
+const remove = () => 1;
 const insert = remove;
 const update = function (stringA: string, stringB: string) {
   return stringA !== stringB ? 1 : 0;
@@ -65,15 +63,15 @@ type SelectChildType =
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
-  const { size, children } = props;
+  const { children } = props;
 
-  const { rootProps, placeholder, ...rest } = omitThemingProps(props);
+  const { placeholder, } = omitThemingProps(props);
   const [isOpen, setOpen] = React.useState(false);
   const [searchText, setSearchText] = React.useState<string>("");
 
-  const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
+  // const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
-  function reducer(state: SelectState, action: SelectAction) {
+  function reducer(_state: SelectState, action: SelectAction) {
     const {
       type,
       payload: { value, label },
@@ -150,7 +148,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   React.useEffect(() => {
     function updateSearchText(key: string) {
       let newSearchText = searchText;
-      if (key == "Backspace") {
+      if (key === "Backspace") {
         newSearchText = searchText.slice(0, -1);
       }
 
@@ -211,7 +209,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       // Unbind the event listener on clean up
       document.removeEventListener("keydown", handleSearchText);
     };
-  }, [ref, isOpen, searchText]);
+  }, [ref, isOpen, searchText, children]);
 
   const renderedChildren = React.Children.map(props.children, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
