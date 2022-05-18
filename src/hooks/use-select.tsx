@@ -176,6 +176,10 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     });
   }
 
+  const addValueToForm = () => {
+    return <input value={state.value} hidden={true}/>
+  }
+
   return {
     state: {
       value: state.value,
@@ -187,7 +191,8 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     },
     getMenuProps,
     getOptionProps,
-    setStateValue
+    setStateValue,
+    addValueToForm
     // handleSearchText,
     // handleClickOutside,
     // getRenderedChildren,
