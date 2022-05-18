@@ -33,7 +33,6 @@ const update = function (stringA: string, stringB: string) {
 // https://reactjs.org/docs/composition-vs-inheritance.html
 export interface SelectProps extends InputProps {
   rootProps?: RootProps;
-  value?: string;
 }
 
 enum SelectActionKind {
@@ -68,8 +67,6 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const { size, children} = props;
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
-//   const input = useFormControl<HTMLInputElement>(rest);
-
   const [isOpen, setOpen] = React.useState(false);
   const [searchText, setSearchText] = React.useState<string>("");
 
