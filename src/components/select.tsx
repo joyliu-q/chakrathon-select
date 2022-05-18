@@ -16,10 +16,7 @@ import {
   Variants,
 } from "framer-motion";
 import React from "react";
-import {
-  forwardRef,
-  omitThemingProps,
-} from "@chakra-ui/system";
+import { forwardRef, omitThemingProps } from "@chakra-ui/system";
 import { useSelect } from "../hooks";
 
 // https://reactjs.org/docs/composition-vs-inheritance.html
@@ -27,24 +24,19 @@ export interface SelectProps extends InputProps {
   rootProps?: RootProps;
 }
 
-interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> { }
+interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
 
 /**
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
-  const {
-    state, 
-    getButtonProps,
-    getMenuProps,
-    getOptionProps,
-  } = useSelect();
+  const { state, getButtonProps, getMenuProps, getOptionProps } = useSelect();
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
   /**
-    * Alert if clicked on outside of element
-  */
+   * Alert if clicked on outside of element
+   */
 
   const renderedChildren = React.Children.map(props.children, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
@@ -75,7 +67,6 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         }}
         {...getButtonProps}
       >
-
         <Text userSelect="none">{state.value}</Text>
         <SelectIcon isOpen={state.isOpen} />
       </Flex>
@@ -187,8 +178,8 @@ interface SelectOptionProps extends BoxProps {
 export const SelectOption: React.FC<SelectOptionProps> = ({
   children,
   value,
-  handleClick = () => { },
-  handleKeyPress = () => { },
+  handleClick = () => {},
+  handleKeyPress = () => {},
   ...props
 }) => {
   return (

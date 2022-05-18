@@ -8,8 +8,8 @@ export interface UseSelectReturn {
 }
 
 export type GetSelectMenuOptions = {
-  ref?: React.RefObject<HTMLDivElement>
-}
+  ref?: React.RefObject<HTMLDivElement>;
+};
 
 export interface SelectState {
   value?: string;
