@@ -125,7 +125,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         }}
         {...getButtonProps}
       >
-        <Text userSelect="none">{state.value}</Text>
+        {state.value ? <Text userSelect="none">{state.value}</Text> : <Text color="gray.300">{placeholder}</Text>}
         <SelectIcon isOpen={state.isOpen} />
       </Flex>
 
