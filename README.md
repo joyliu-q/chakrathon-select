@@ -65,7 +65,7 @@ The hook offers 4 key returns:
 </Box>
 ```
 
-## Complete Example: Forms
+## Complete Example
 ```javascript
 import {
   Box,
@@ -112,6 +112,9 @@ function Form() {
 
 export default Form;
 ```
+
+# Form Support
+Chakrathon-select now is compatible with chakra forms and regular HTML forms. This is handled automatically in the select component, and can be added using the `addValueToForm()` function for the hook.
 
 # Customization
 For full customization, we recommend developers to use our `useSelect` hook.
