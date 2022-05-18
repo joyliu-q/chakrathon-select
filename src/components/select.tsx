@@ -36,6 +36,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const {
     state, 
     getButtonProps,
+    getMenuProps,
     getOptionProps,
   } = useSelect();
 
@@ -45,18 +46,14 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     * Alert if clicked on outside of element
   */
 
-  // hi bog hi
-
   const renderedChildren = React.Children.map(props.children, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
     // error too.
     if (React.isValidElement(child)) {
-      console.log(child)
       return React.cloneElement(child, {
         ...getOptionProps({ value: child.props.value }),
       });
     }
-    console.log(child)
     return child;
   });
 
@@ -86,6 +83,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       <AnimatePresence>
         {state.isOpen && (
           <Stack
+            {...getMenuProps()}
             w="full"
             as={motion.div}
             position="absolute"
