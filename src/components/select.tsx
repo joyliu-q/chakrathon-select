@@ -15,288 +15,106 @@ import {
   motion,
   Variants,
 } from "framer-motion";
-import React, { ReactElement, useReducer } from "react";
+import React from "react";
 import {
   forwardRef,
   omitThemingProps,
 } from "@chakra-ui/system";
-
-const editDistance = require("edit-distance");
-const remove = () => 1;
-const insert = remove;
-const update = function (stringA: string, stringB: string) {
-  return stringA !== stringB ? 1 : 0;
-};
+import { split } from "@chakra-ui/utils";
+import { useSelect } from "../hooks";
 
 // https://reactjs.org/docs/composition-vs-inheritance.html
 export interface SelectProps extends InputProps {
   rootProps?: RootProps;
 }
 
-enum SelectActionKind {
-  OPTION = "option",
-  OPTION_TYPED = "option_type",
-}
-
-interface SelectAction {
-  type: SelectActionKind;
-  payload: {
-    value: string;
-    label: React.ReactNode;
-  };
-}
-
-interface SelectState {
-  label: React.ReactNode;
-  value: string;
-}
-
-interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
-
-type SelectChildType =
-  | string
-  | number
-  | React.ReactFragment
-  | React.ReactElement<any, string | React.JSXElementConstructor<any>>;
+interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> { }
 
 /**
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
-  const { children } = props;
+  const {
+    state, 
+    getButtonProps,
+    getOptionProps,
+  } = useSelect();
 
-  const { placeholder, } = omitThemingProps(props);
-  const [isOpen, setOpen] = React.useState(false);
-  const [searchText, setSearchText] = React.useState<string>("");
+  const { rootProps, placeholder, ...rest } = omitThemingProps(props);
 
-  // const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
+  /**
+    * Alert if clicked on outside of element
+  */
 
-  function reducer(_state: SelectState, action: SelectAction) {
-    const {
-      type,
-      payload: { value, label },
-    } = action;
-
-    switch (type) {
-      case SelectActionKind.OPTION:
-        setOpen(false);
-        return { value, label };
-      case SelectActionKind.OPTION_TYPED:
-        return { value, label };
-      default:
-        throw new Error();
-    }
-  }
-
-  const [state, dispatch] = useReducer(reducer, {
-    label: placeholder,
-    value: "",
-  });
-
-  function compareByLevenshteinDistance(
-    a: SelectChildType,
-    b: SelectChildType,
-    baseString = searchText
-  ) {
-    if (baseString === "") {
-      return 0;
-    }
-
-    const aVal = (a as ReactElement).props.children.toLowerCase();
-    const bVal = (b as ReactElement).props.children.toLowerCase();
-
-    const levA = editDistance.levenshtein(
-      baseString,
-      aVal,
-      insert,
-      remove,
-      update
-    );
-    const levB = editDistance.levenshtein(
-      baseString,
-      bVal,
-      insert,
-      remove,
-      update
-    );
-    return levA.distance - levB.distance;
-  }
-
-  const ref = React.useRef<HTMLDivElement>(null);
-  const selectRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    /**
-     * Alert if clicked on outside of element
-     */
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
-        setSearchText("");
-      }
-    }
-
-    // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, selectRef, isOpen]);
-
-  React.useEffect(() => {
-    function updateSearchText(key: string) {
-      let newSearchText = searchText;
-      if (key === "Backspace") {
-        newSearchText = searchText.slice(0, -1);
-      }
-
-      if (key === "Esc" || key === "Escape") {
-        newSearchText = "";
-      }
-
-      if (key.match(/^[a-zA-Z0-9\s+]$/)) {
-        newSearchText = searchText.concat(key.toLowerCase());
-      }
-
-      setSearchText(newSearchText);
-      return newSearchText;
-    }
-    function handleSearchText(event: KeyboardEvent) {
-      if (isOpen) {
-        const newSearchText = updateSearchText(event.key);
-        const childrenAsArray = children as ReactElement[];
-
-        if (childrenAsArray.length > 0) {
-          let lowestDist: number = editDistance.levenshtein(
-            newSearchText,
-            childrenAsArray[0].props.children,
-            insert,
-            remove,
-            update
-          ).distance;
-          let lowIdx = 0;
-
-          for (let i = 1; i < childrenAsArray.length; i++) {
-            const currentDist: number = editDistance.levenshtein(
-              newSearchText,
-              childrenAsArray[i].props.children,
-              insert,
-              remove,
-              update
-            ).distance;
-            if (lowestDist > currentDist) {
-              lowestDist = currentDist;
-              lowIdx = i;
-            }
-          }
-
-          dispatch({
-            type: SelectActionKind.OPTION_TYPED,
-            payload: {
-              value: childrenAsArray[lowIdx].props.value,
-              label: childrenAsArray[lowIdx].props.children,
-            },
-          });
-        }
-      }
-    }
-
-    document.addEventListener("keydown", handleSearchText);
-
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("keydown", handleSearchText);
-    };
-  }, [ref, isOpen, searchText, children]);
+  // hi bog hi
 
   const renderedChildren = React.Children.map(props.children, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
     // error too.
     if (React.isValidElement(child)) {
+      console.log(child)
       return React.cloneElement(child, {
-        handleClick: (value: string, label: React.ReactNode) => {
-          dispatch({
-            type: SelectActionKind.OPTION,
-            payload: {
-              value,
-              label,
-            },
-          });
-        },
+        ...getOptionProps({ value: child.props.value }),
       });
     }
+    console.log(child)
     return child;
   });
 
-  if (searchText !== "") {
-    renderedChildren!.sort(compareByLevenshteinDistance);
-  }
-
-  const toggleIsOpen = () => {
-    setOpen(!isOpen);
-    if (!isOpen) {
-      setSearchText("");
-    }
-  };
-
   return (
-    <>
-      <Box position="relative" ref={ref}>
-        <Flex
-          w="full"
-          h={10}
-          pl={4}
-          pr={2}
-          borderRadius="md"
-          border="1px solid"
-          borderColor="gray.200"
-          align="center"
-          justify="space-between"
-          transitionDuration="normal"
-          _hover={{
-            borderColor: "gray.300",
-          }}
-          onClick={toggleIsOpen}
-        >
-          <Text userSelect="none">{state.label}</Text>
-          <SelectIcon isOpen={isOpen} />
-        </Flex>
+    <Box position="relative">
+      <Flex
+        w="full"
+        h={10}
+        pl={4}
+        pr={2}
+        borderRadius="md"
+        border="1px solid"
+        borderColor="gray.200"
+        align="center"
+        justify="space-between"
+        transitionDuration="normal"
+        _hover={{
+          borderColor: "gray.300",
+        }}
+        {...getButtonProps}
+      >
 
-        <AnimatePresence>
-          {isOpen && (
-            <Stack
-              w="full"
-              as={motion.div}
-              position="absolute"
-              zIndex={1}
-              bg="white"
-              py={2}
-              border="1px solid"
-              borderColor="gray.200"
-              borderRadius="md"
-              initial={{
-                opacity: 0,
-                y: -20,
-              }}
-              animate={{
-                opacity: 1,
-                y: 8,
-              }}
-              exit={{
-                height: 0,
-                opacity: 0,
-                overflow: "hidden",
-              }}
-            >
-              {renderedChildren}
-            </Stack>
-          )}
-        </AnimatePresence>
-      </Box>
-      <input hidden value={state.value} />
-    </>
+        <Text userSelect="none">{state.value}</Text>
+        <SelectIcon isOpen={state.isOpen} />
+      </Flex>
+
+      <AnimatePresence>
+        {state.isOpen && (
+          <Stack
+            w="full"
+            as={motion.div}
+            position="absolute"
+            zIndex={1}
+            bg="white"
+            py={2}
+            border="1px solid"
+            borderColor="gray.200"
+            borderRadius="md"
+            initial={{
+              opacity: 0,
+              y: -20,
+            }}
+            animate={{
+              opacity: 1,
+              y: 8,
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+              overflow: "hidden",
+            }}
+          >
+            {renderedChildren}
+          </Stack>
+        )}
+      </AnimatePresence>
+    </Box>
   );
 });
 
@@ -372,8 +190,8 @@ interface SelectOptionProps extends BoxProps {
 export const SelectOption: React.FC<SelectOptionProps> = ({
   children,
   value,
-  handleClick = () => {},
-  handleKeyPress = () => {},
+  handleClick = () => { },
+  handleKeyPress = () => { },
   ...props
 }) => {
   return (
