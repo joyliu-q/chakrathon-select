@@ -76,11 +76,6 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   const [isOpen, setIsOpen] = React.useState(false);
 
   /**
-   * The value of the selected option item
-   */
-  const [value, setValue] = React.useState(null as string | null);
-
-  /**
    * Typeahead: the current text being searched
    */
   const [searchText, setSearchText] = React.useState<string>("");
@@ -110,7 +105,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     return levA.distance - levB.distance;
   }
 
-  function reducer(state: SelectState, action: SelectAction) {
+  function reducer(_state: SelectState, action: SelectAction) {
     const {
       type,
       payload: { value, label },
@@ -206,6 +201,10 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   let selectMenuRef = React.useRef<HTMLDivElement>(null)
 
   const handleClickOutside = React.useCallback((event: MouseEvent) => {
+    // If closeOnBlur is false, we don't close when clicked outside
+    if (!closeOnBlur) {
+      return;
+    }
     if (selectMenuRef.current && !selectMenuRef.current.contains(event.target as Node)) {
       onClose();
       setSearchText("");

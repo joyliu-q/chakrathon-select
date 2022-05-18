@@ -18,7 +18,7 @@
     },
     {
       "name": "@types/node",
-      "version": "^12",
+      "version": "^14",
       "type": "build"
     },
     {
@@ -42,6 +42,46 @@
       "name": "typescript",
       "version": "^4.0.3",
       "type": "build"
+    },
+    {
+      "name": "@chakra-ui/clickable",
+      "type": "runtime"
+    },
+    {
+      "name": "@chakra-ui/descendant",
+      "type": "runtime"
+    },
+    {
+      "name": "@chakra-ui/form-control",
+      "type": "runtime"
+    },
+    {
+      "name": "@chakra-ui/popper",
+      "type": "runtime"
+    },
+    {
+      "name": "@chakra-ui/react",
+      "type": "runtime"
+    },
+    {
+      "name": "@chakra-ui/system",
+      "type": "runtime"
+    },
+    {
+      "name": "@emotion/react",
+      "type": "runtime"
+    },
+    {
+      "name": "@emotion/styled",
+      "type": "runtime"
+    },
+    {
+      "name": "edit-distance",
+      "type": "runtime"
+    },
+    {
+      "name": "framer-motion",
+      "type": "runtime"
     },
     {
       "name": "react",

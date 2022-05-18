@@ -20,7 +20,6 @@ import {
   forwardRef,
   omitThemingProps,
 } from "@chakra-ui/system";
-import { split } from "@chakra-ui/utils";
 import { useSelect } from "../hooks";
 
 // https://reactjs.org/docs/composition-vs-inheritance.html
@@ -62,7 +61,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   });
 
   return (
-    <Box position="relative">
+    <Box position="relative" {...rest}>
       <Flex
         w="full"
         h={10}
