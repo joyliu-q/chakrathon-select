@@ -159,6 +159,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
           </Stack>
         )}
       </AnimatePresence>
+      <input hidden value={state.value}></input>
     </Box>
   );
 });
