@@ -43,7 +43,7 @@ function Form() {
         Custom useSelect (Hook)
       </Text>
       <Box>
-        <Box {...getButtonProps} bgColor="grey">{state.value == "" ? "Press to select!" : state.value}</Box>
+        <Box {...getButtonProps} bgColor="grey">{state.value === "" ? "Press to select!" : state.value}</Box>
         {state.isOpen ?
           <VStack align="start" py={2} {...getMenuProps()}>
             <Button {...getOptionProps({ value: "one" })}>Option 1</Button>
