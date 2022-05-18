@@ -122,7 +122,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         {...VARIANT_TO_SELECT_BUTTON_STYLE[variant]}
         {...getButtonProps}
       >
-        {state.value ? <Text userSelect="none">{state.value}</Text> : <Text color={VARIANT_TO_SELECT_BUTTON_STYLE[variant].color ?? "gray.300"}>{placeholder}</Text>}
+        {state.label ? <Text userSelect="none">{state.label}</Text> : <Text color={VARIANT_TO_SELECT_BUTTON_STYLE[variant].color ?? "gray.300"}>{placeholder}</Text>}
         { 
           variant === "saitama" ?
           <SaitamaIcon /> :

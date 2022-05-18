@@ -15,6 +15,7 @@ export type GetSelectMenuOptions = {
 
 export interface SelectState {
   value?: string;
+  label?: string;
   isOpen: boolean;
   // TODO: add id
   //id: string;
