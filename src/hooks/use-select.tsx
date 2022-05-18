@@ -76,6 +76,11 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   const [isOpen, setIsOpen] = React.useState(false);
 
   /**
+   * The focused value (not yet selected)
+   */
+  const [focused, setFocused] = React.useState(0);
+
+  /**
    * The value of the selected option item
    */
   const [value, setValue] = React.useState(null as string | null);
@@ -133,7 +138,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
 
   function updateSearchText(key: string) {
     let newSearchText = searchText;
-    if (key == "Backspace") {
+    if (key === "Backspace") {
       newSearchText = searchText.slice(0, -1);
     }
 
@@ -204,13 +209,14 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   const [buttonId, selectListId] = useIds(`select-button`, `select-list`)
   // NOTE: mutability introduced here in order to reassign ref if a different ref was passed in
   let selectMenuRef = React.useRef<HTMLDivElement>(null)
+  const containerRef = React.useRef<HTMLDivElement>(null);
 
   const handleClickOutside = React.useCallback((event: MouseEvent) => {
-    if (selectMenuRef.current && !selectMenuRef.current.contains(event.target as Node)) {
+    if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
       onClose();
       setSearchText("");
     }
-  }, [selectMenuRef]);
+  }, [containerRef]);
 
   React.useEffect(() => {
     if (isOpen) {
@@ -218,7 +224,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
-  }, [selectMenuRef, isOpen, handleClickOutside]);
+  }, [containerRef, isOpen, handleClickOutside]);
   // this selectRef references the contaienr containing both the input & the list of options since we want to handle clicks that aren't clicking either
 
   React.useEffect(() => {
@@ -250,12 +256,26 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     }
   }
 
-  const getMenuProps = (props?: GetSelectMenuOptions) => { 
-    if (props?.ref) {
+  const getMenuProps = (props: GetSelectMenuOptions = {}) => { 
+    if (props.ref) {
       selectMenuRef = props.ref;
     }  
     return {
       ref: selectMenuRef,
+    }
+  }
+
+  const getButtonProps = () => {
+    return {
+      onClick: onToggle,
+      tabIndex: 0,
+      id: buttonId,
+    }
+  }
+
+  const getContainerProps = () => {
+    return {
+      ref: containerRef
     }
   }
 
@@ -264,12 +284,10 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
       value: state.value,
       isOpen,
     },
-    getButtonProps: {
-      onClick: onToggle,
-      id: buttonId,
-    },
+    getButtonProps,
     getMenuProps,
     getOptionProps,
+    getContainerProps
     // handleSearchText,
     // handleClickOutside,
     // getRenderedChildren,

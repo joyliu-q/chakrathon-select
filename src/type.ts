@@ -2,9 +2,10 @@ import React from "react";
 
 export interface UseSelectReturn {
   state: SelectState;
-  getButtonProps: GetSelectButtonProps;
+  getButtonProps: () => GetSelectButtonProps;
   getMenuProps: (props?: GetSelectMenuOptions) => GetSelectMenuProps;
   getOptionProps: ({ value }: { value: string }) => GetSelectOptionProps;
+  getContainerProps: () => GetSelectContainerProps;
 }
 
 export type GetSelectMenuOptions = {
@@ -22,6 +23,7 @@ export interface SelectState {
 export interface GetSelectButtonProps {
   onClick: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   id: string;
+  tabIndex: number;
 }
 
 export interface GetSelectMenuProps {
@@ -32,4 +34,8 @@ export interface GetSelectOptionProps {
   id: string;
   value: string;
   onClick: (event: React.MouseEvent) => void;
+}
+
+export interface GetSelectContainerProps {
+  ref: React.RefObject<HTMLDivElement>;
 }

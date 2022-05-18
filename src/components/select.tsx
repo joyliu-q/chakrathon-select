@@ -52,12 +52,10 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     // Checking isValidElement is the safe way and avoids a typescript
     // error too.
     if (React.isValidElement(child)) {
-      console.log(child)
       return React.cloneElement(child, {
         ...getOptionProps({ value: child.props.value }),
       });
     }
-    console.log(child)
     return child;
   });
 
@@ -77,7 +75,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         _hover={{
           borderColor: "gray.300",
         }}
-        {...getButtonProps}
+        {...getButtonProps()}
       >
 
         <Text userSelect="none">{state.value}</Text>
