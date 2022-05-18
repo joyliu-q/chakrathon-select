@@ -28,7 +28,7 @@ function Form() {
         <SelectOption value="4">Option 4</SelectOption>
       </Select>
       <Text>Custom useSelect (Hook)</Text>
-      <Box {...getContainerProps()}>
+      {/* <Box {...getContainerProps()}>
         <Box {...getButtonProps()} bgColor="grey">
           {state.value == "" ? "Press to select!" : state.value}
         </Box>
@@ -60,7 +60,7 @@ function Form() {
             </Button>
           </VStack>
         ) : null}
-      </Box>
+      </Box> */}
       <Text>Chakra's Select</Text>
       <ChakraSelect>
         <option value="1">Option 1</option>

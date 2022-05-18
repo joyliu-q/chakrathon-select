@@ -233,10 +233,11 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    if (selectMenuRef.current) {
+    if (selectMenuRef.current && focused < selectMenuRef.current.children.length) {
       // focus the focused item
       const focusedEl = selectMenuRef.current.children[focused] as HTMLElement;
       if (focusedEl) {
+        
         focusedEl.focus();
       }
     }
@@ -244,6 +245,9 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
 
   React.useEffect(() => {
     function handleKeyNav(ev: KeyboardEvent) {
+      console.log(focused);
+      console.log(selectMenuRef)
+      
       switch (ev.key) {
         case "ArrowDown":
           if (
@@ -281,7 +285,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     return () => {
       document.removeEventListener("keydown", handleKeyNav);
     };
-  });
+  }, [focused, selectMenuRef]);
 
   const handleClickOutside = React.useCallback(
     (event: MouseEvent) => {

@@ -37,6 +37,8 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const {
     state, 
     getButtonProps,
+    getContainerProps,
+    getMenuProps,
     getOptionProps,
   } = useSelect();
 
@@ -60,7 +62,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   });
 
   return (
-    <Box position="relative">
+    <Box position="relative" {...getContainerProps()}>
       <Flex
         w="full"
         h={10}
@@ -107,6 +109,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
               opacity: 0,
               overflow: "hidden",
             }}
+            {...getMenuProps()}
           >
             {renderedChildren}
           </Stack>
@@ -192,6 +195,7 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
   handleKeyPress = () => { },
   ...props
 }) => {
+
   return (
     <Box
       onClick={() => handleClick(value, children)}
@@ -199,6 +203,9 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
       py={2}
       transitionDuration="normal"
       _hover={{
+        bg: "gray.100",
+      }}
+      _focus={{
         bg: "gray.100",
       }}
       {...props}
