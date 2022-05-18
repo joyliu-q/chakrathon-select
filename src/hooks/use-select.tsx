@@ -1,8 +1,10 @@
+import { useIds } from "@chakra-ui/hooks";
+import * as React from "react";
 import {
-  useIds,
-} from "@chakra-ui/hooks"
-import * as React from "react"
-import { GetSelectMenuOptions, UseSelectReturn } from "../type";
+  GetSelectMenuOptions,
+  GetSelectOptionProps,
+  UseSelectReturn,
+} from "../type";
 
 const editDistance = require("edit-distance");
 const remove = (_node: any) => 1;
@@ -13,7 +15,7 @@ const update = function (stringA: string, stringB: string) {
 
 enum SelectActionKind {
   OPTION = "option",
-  OPTION_TYPED = "option_type"
+  OPTION_TYPED = "option_type",
 }
 
 interface SelectAction {
@@ -30,7 +32,10 @@ interface SelectState {
 }
 
 type SelectChildType =
-  (string | number | React.ReactFragment | React.ReactElement<any, string | React.JSXElementConstructor<any>>);
+  | string
+  | number
+  | React.ReactFragment
+  | React.ReactElement<any, string | React.JSXElementConstructor<any>>;
 
 /* -------------------------------------------------------------------------------------------------
  * useSelect hook
@@ -43,18 +48,18 @@ export interface UseSelectProps {
    *
    * @default true
    */
-  closeOnSelect?: boolean
+  closeOnSelect?: boolean;
   /**
    * If `true`, the select will close when you click outside
    * the select list
    *
    * @default true
    */
-  closeOnBlur?: boolean
+  closeOnBlur?: boolean;
   /**
    * placeholder to display when no value is selected
    */
-  placeholder?: React.ReactNode
+  placeholder?: React.ReactNode;
 }
 
 /**
@@ -90,14 +95,18 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
    */
   const [searchText, setSearchText] = React.useState<string>("");
 
-  function compareByLevenshteinDistance(a: SelectChildType, b: SelectChildType, baseString = searchText) {
+  function compareByLevenshteinDistance(
+    a: SelectChildType,
+    b: SelectChildType,
+    baseString = searchText
+  ) {
     if (baseString === "") {
       return 0;
     }
-  
+
     const aVal = (a as React.ReactElement).props.children.toLowerCase();
     const bVal = (b as React.ReactElement).props.children.toLowerCase();
-  
+
     const levA = editDistance.levenshtein(
       baseString,
       aVal,
@@ -154,69 +163,138 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     return newSearchText;
   }
 
-  const handleSearchText = React.useCallback((event: KeyboardEvent) => {
-    const node = selectMenuRef.current;
+  const handleSearchText = React.useCallback(
+    (event: KeyboardEvent) => {
+      const node = selectMenuRef.current;
 
-    if (isOpen && node != undefined) {
-      const newSearchText = updateSearchText(event.key);
-      const children = node.children;
-      
-      // TODO: IM SORRY THIS IS SO SUS LMAO
-      const childrenAsArray = children as unknown as React.ReactElement[];
+      if (isOpen && node != undefined) {
+        const newSearchText = updateSearchText(event.key);
+        const children = node.children;
 
-      if (childrenAsArray.length > 0) {
-        let lowestDist: number = editDistance.levenshtein(newSearchText,
-          childrenAsArray[0].props.children, insert, remove, update).distance;
-        let lowIdx = 0;
+        // TODO: IM SORRY THIS IS SO SUS LMAO
+        const childrenAsArray = children as unknown as React.ReactElement[];
 
-        for (let i = 1; i < childrenAsArray.length; i++) {
-          const currentDist: number = editDistance.levenshtein(newSearchText,
-            childrenAsArray[i].props.children, insert, remove, update).distance;
-          if (lowestDist > currentDist) {
-            lowestDist = currentDist;
-            lowIdx = i;
+        if (childrenAsArray.length > 0) {
+          let lowestDist: number = editDistance.levenshtein(
+            newSearchText,
+            childrenAsArray[0].props.children,
+            insert,
+            remove,
+            update
+          ).distance;
+          let lowIdx = 0;
+
+          for (let i = 1; i < childrenAsArray.length; i++) {
+            const currentDist: number = editDistance.levenshtein(
+              newSearchText,
+              childrenAsArray[i].props.children,
+              insert,
+              remove,
+              update
+            ).distance;
+            if (lowestDist > currentDist) {
+              lowestDist = currentDist;
+              lowIdx = i;
+            }
           }
+
+          dispatch({
+            type: SelectActionKind.OPTION_TYPED,
+            payload: {
+              value: childrenAsArray[lowIdx].props.value,
+              label: childrenAsArray[lowIdx].props.children,
+            },
+          });
         }
-
-        dispatch({
-          type: SelectActionKind.OPTION_TYPED,
-          payload: {
-            value: childrenAsArray[lowIdx].props.value,
-            label: childrenAsArray[lowIdx].props.children,
-          }
-        });
       }
-    }
-  }, [searchText]);  
+    },
+    [searchText]
+  );
 
   const onOpen = () => {
     setIsOpen(true);
-  }
+  };
   const onClose = () => {
     setIsOpen(false);
-  }
+  };
   const onToggle = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
       setSearchText("");
     }
-  }
-
+  };
 
   /**
    * Generate unique ids for select's list and button
    */
-  const [buttonId, selectListId] = useIds(`select-button`, `select-list`)
+  const [buttonId, selectListId] = useIds(`select-button`, `select-list`);
   // NOTE: mutability introduced here in order to reassign ref if a different ref was passed in
-  let selectMenuRef = React.useRef<HTMLDivElement>(null)
+  let selectMenuRef = React.useRef<HTMLDivElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const handleClickOutside = React.useCallback((event: MouseEvent) => {
-    if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-      onClose();
-      setSearchText("");
+  React.useEffect(() => {
+    if (selectMenuRef.current) {
+      // focus the focused item
+      const focusedEl = selectMenuRef.current.children[focused] as HTMLElement;
+      if (focusedEl) {
+        focusedEl.focus();
+      }
     }
-  }, [containerRef]);
+  }, [focused, selectMenuRef]);
+
+  React.useEffect(() => {
+    function handleKeyNav(ev: KeyboardEvent) {
+      switch (ev.key) {
+        case "ArrowDown":
+          if (
+            selectMenuRef.current &&
+            focused < selectMenuRef.current.children.length - 1
+          ) {
+            setFocused(focused + 1);
+          }
+          break;
+
+        case "ArrowUp":
+          if (selectMenuRef.current && focused > 0) {
+            setFocused(focused - 1);
+          }
+          break;
+
+        case "Enter":
+        case " ":
+          if (
+            selectMenuRef.current &&
+            focused < selectMenuRef.current.children.length
+          ) {
+            const selected = selectMenuRef.current.children[
+              focused
+            ] as HTMLElement;
+            if (selected) {
+              selected.click();
+            }
+          }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyNav);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyNav);
+    };
+  });
+
+  const handleClickOutside = React.useCallback(
+    (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+        setSearchText("");
+      }
+    },
+    [containerRef]
+  );
 
   React.useEffect(() => {
     if (isOpen) {
@@ -236,7 +314,11 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     };
   }, [isOpen, searchText]);
 
-  const getOptionProps = ({ value }: { value: string }) => {
+  const getOptionProps = ({
+    value,
+  }: {
+    value: string;
+  }): GetSelectOptionProps => {
     return {
       id: selectListId,
       value,
@@ -249,35 +331,35 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
           payload: {
             value,
             label: value, // TODO: fix removed label
-          }
+          },
         });
       },
       // onClick: onClickOption,
-    }
-  }
+    };
+  };
 
-  const getMenuProps = (props: GetSelectMenuOptions = {}) => { 
+  const getMenuProps = (props: GetSelectMenuOptions = {}) => {
     if (props.ref) {
       selectMenuRef = props.ref;
-    }  
+    }
     return {
       ref: selectMenuRef,
-    }
-  }
+    };
+  };
 
   const getButtonProps = () => {
     return {
       onClick: onToggle,
       tabIndex: 0,
       id: buttonId,
-    }
-  }
+    };
+  };
 
   const getContainerProps = () => {
     return {
-      ref: containerRef
-    }
-  }
+      ref: containerRef,
+    };
+  };
 
   return {
     state: {
@@ -287,9 +369,9 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     getButtonProps,
     getMenuProps,
     getOptionProps,
-    getContainerProps
+    getContainerProps,
     // handleSearchText,
     // handleClickOutside,
     // getRenderedChildren,
-  }
+  };
 }
