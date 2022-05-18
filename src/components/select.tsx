@@ -8,7 +8,6 @@ import {
   PropsOf,
   Stack,
   Text,
-  useBoolean,
 } from "@chakra-ui/react";
 import {
   AnimatePresence,
@@ -19,13 +18,11 @@ import {
 import React, { ReactElement, useReducer } from "react";
 import {
   forwardRef,
-  layoutPropNames,
   omitThemingProps,
 } from "@chakra-ui/system";
-import { split } from "@chakra-ui/utils";
 
 const editDistance = require("edit-distance");
-const remove = (node: any) => 1;
+const remove = () => 1;
 const insert = remove;
 const update = function (stringA: string, stringB: string) {
   return stringA !== stringB ? 1 : 0;
@@ -38,7 +35,7 @@ export interface SelectProps extends InputProps {
 
 enum SelectActionKind {
   OPTION = "option",
-  OPTION_TYPED = "option_type"
+  OPTION_TYPED = "option_type",
 }
 
 interface SelectAction {
@@ -57,22 +54,24 @@ interface SelectState {
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
 
 type SelectChildType =
-    (string | number | React.ReactFragment | React.ReactElement<any, string | React.JSXElementConstructor<any>>);
+  | string
+  | number
+  | React.ReactFragment
+  | React.ReactElement<any, string | React.JSXElementConstructor<any>>;
 
 /**
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
-  const { size, children } = props;
+  const { children } = props;
 
-  const { rootProps, placeholder, ...rest } = omitThemingProps(props);
-
+  const { placeholder, } = omitThemingProps(props);
   const [isOpen, setOpen] = React.useState(false);
   const [searchText, setSearchText] = React.useState<string>("");
 
-  const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
+  // const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
-  function reducer(state: SelectState, action: SelectAction) {
+  function reducer(_state: SelectState, action: SelectAction) {
     const {
       type,
       payload: { value, label },
@@ -94,7 +93,11 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     value: "",
   });
 
-  function compareByLevenshteinDistance(a: SelectChildType, b: SelectChildType, baseString = searchText) {
+  function compareByLevenshteinDistance(
+    a: SelectChildType,
+    b: SelectChildType,
+    baseString = searchText
+  ) {
     if (baseString === "") {
       return 0;
     }
@@ -103,18 +106,18 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     const bVal = (b as ReactElement).props.children.toLowerCase();
 
     const levA = editDistance.levenshtein(
-        baseString,
-        aVal,
-        insert,
-        remove,
-        update
+      baseString,
+      aVal,
+      insert,
+      remove,
+      update
     );
     const levB = editDistance.levenshtein(
-        baseString,
-        bVal,
-        insert,
-        remove,
-        update
+      baseString,
+      bVal,
+      insert,
+      remove,
+      update
     );
     return levA.distance - levB.distance;
   }
@@ -127,7 +130,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
      * Alert if clicked on outside of element
      */
     function handleClickOutside(event: MouseEvent) {
-      if(ref.current && !ref.current.contains(event.target as Node)) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
         setOpen(false);
         setSearchText("");
       }
@@ -145,7 +148,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   React.useEffect(() => {
     function updateSearchText(key: string) {
       let newSearchText = searchText;
-      if (key == "Backspace") {
+      if (key === "Backspace") {
         newSearchText = searchText.slice(0, -1);
       }
 
@@ -166,13 +169,23 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         const childrenAsArray = children as ReactElement[];
 
         if (childrenAsArray.length > 0) {
-          let lowestDist : number = editDistance.levenshtein(newSearchText,
-            childrenAsArray[0].props.children, insert, remove, update).distance;
+          let lowestDist: number = editDistance.levenshtein(
+            newSearchText,
+            childrenAsArray[0].props.children,
+            insert,
+            remove,
+            update
+          ).distance;
           let lowIdx = 0;
 
           for (let i = 1; i < childrenAsArray.length; i++) {
-            const currentDist : number = editDistance.levenshtein(newSearchText,
-                childrenAsArray[i].props.children, insert, remove, update).distance;
+            const currentDist: number = editDistance.levenshtein(
+              newSearchText,
+              childrenAsArray[i].props.children,
+              insert,
+              remove,
+              update
+            ).distance;
             if (lowestDist > currentDist) {
               lowestDist = currentDist;
               lowIdx = i;
@@ -184,7 +197,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
             payload: {
               value: childrenAsArray[lowIdx].props.value,
               label: childrenAsArray[lowIdx].props.children,
-            }
+            },
           });
         }
       }
@@ -196,7 +209,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
       // Unbind the event listener on clean up
       document.removeEventListener("keydown", handleSearchText);
     };
-  }, [ref, isOpen, searchText]);
+  }, [ref, isOpen, searchText, children]);
 
   const renderedChildren = React.Children.map(props.children, (child) => {
     // Checking isValidElement is the safe way and avoids a typescript
@@ -209,9 +222,9 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
             payload: {
               value,
               label,
-            }
+            },
           });
-        }
+        },
       });
     }
     return child;
@@ -223,65 +236,67 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
 
   const toggleIsOpen = () => {
     setOpen(!isOpen);
-    if(!isOpen) {
+    if (!isOpen) {
       setSearchText("");
     }
-  }
+  };
 
   return (
-    <Box position="relative" ref={ref}>
-      <Flex
-        w="full"
-        h={10}
-        pl={4}
-        pr={2}
-        borderRadius="md"
-        border="1px solid"
-        borderColor="gray.200"
-        align="center"
-        justify="space-between"
-        transitionDuration="normal"
-        _hover={{
-          borderColor: "gray.300",
-        }}
-        onClick={toggleIsOpen}
-      >
+    <>
+      <Box position="relative" ref={ref}>
+        <Flex
+          w="full"
+          h={10}
+          pl={4}
+          pr={2}
+          borderRadius="md"
+          border="1px solid"
+          borderColor="gray.200"
+          align="center"
+          justify="space-between"
+          transitionDuration="normal"
+          _hover={{
+            borderColor: "gray.300",
+          }}
+          onClick={toggleIsOpen}
+        >
+          <Text userSelect="none">{state.label}</Text>
+          <SelectIcon isOpen={isOpen} />
+        </Flex>
 
-        <Text userSelect="none">{state.label}</Text>
-        <SelectIcon isOpen={isOpen} />
-      </Flex>
-
-      <AnimatePresence>
-        {isOpen && (
-          <Stack
-            w="full"
-            as={motion.div}
-            position="absolute"
-            zIndex={1}
-            bg="white"
-            py={2}
-            border="1px solid"
-            borderColor="gray.200"
-            borderRadius="md"
-            initial={{
-              opacity: 0,
-              y: -20,
-            }}
-            animate={{
-              opacity: 1,
-              y: 8,
-            }}
-            exit={{
-              height: 0,
-              opacity: 0,
-              overflow: "hidden",
-            }}
-          >
-            {renderedChildren}
-          </Stack>
-        )}
-      </AnimatePresence>
-    </Box>
+        <AnimatePresence>
+          {isOpen && (
+            <Stack
+              w="full"
+              as={motion.div}
+              position="absolute"
+              zIndex={1}
+              bg="white"
+              py={2}
+              border="1px solid"
+              borderColor="gray.200"
+              borderRadius="md"
+              initial={{
+                opacity: 0,
+                y: -20,
+              }}
+              animate={{
+                opacity: 1,
+                y: 8,
+              }}
+              exit={{
+                height: 0,
+                opacity: 0,
+                overflow: "hidden",
+              }}
+            >
+              {renderedChildren}
+            </Stack>
+          )}
+        </AnimatePresence>
+      </Box>
+      <input hidden value={state.value} />
+    </>
   );
 });
 
@@ -361,19 +376,18 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
   handleKeyPress = () => {},
   ...props
 }) => {
-
   return (
-      <Box
-          onClick={() => handleClick(value, children)}
-          px={4}
-          py={2}
-          transitionDuration="normal"
-          _hover={{
-            bg: "gray.100",
-          }}
-          {...props}
-      >
-        {children}
-      </Box>
+    <Box
+      onClick={() => handleClick(value, children)}
+      px={4}
+      py={2}
+      transitionDuration="normal"
+      _hover={{
+        bg: "gray.100",
+      }}
+      {...props}
+    >
+      {children}
+    </Box>
   );
 };
