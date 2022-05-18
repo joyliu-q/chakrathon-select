@@ -1,7 +1,5 @@
-import {
-  useIds,
-} from "@chakra-ui/hooks"
-import * as React from "react"
+import { useIds } from "@chakra-ui/hooks";
+import * as React from "react";
 import { GetSelectMenuOptions, UseSelectReturn } from "../type";
 
 const editDistance = require("edit-distance");
@@ -13,7 +11,7 @@ const update = function (stringA: string, stringB: string) {
 
 enum SelectActionKind {
   OPTION = "option",
-  OPTION_TYPED = "option_type"
+  OPTION_TYPED = "option_type",
 }
 
 interface SelectAction {
@@ -40,18 +38,18 @@ export interface UseSelectProps {
    *
    * @default true
    */
-  closeOnSelect?: boolean
+  closeOnSelect?: boolean;
   /**
    * If `true`, the select will close when you click outside
    * the select list
    *
    * @default true
    */
-  closeOnBlur?: boolean
+  closeOnBlur?: boolean;
   /**
    * placeholder to display when no value is selected
    */
-  placeholder?: React.ReactNode
+  placeholder?: React.ReactNode;
 }
 
 /**
@@ -98,9 +96,9 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     value: "",
   });
 
-  function updateSearchText(key: string) {
+  const updateSearchText = React.useCallback((key: string) => {
     let newSearchText = searchText;
-    if (key == "Backspace") {
+    if (key === "Backspace") {
       newSearchText = searchText.slice(0, -1);
     }
 
@@ -114,80 +112,91 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
 
     setSearchText(newSearchText);
     return newSearchText;
-  }
+  }, [searchText]);
 
-  const handleSearchText = React.useCallback((event: KeyboardEvent) => {
-    /**
-     * Steps to handle the search text
-     * 1. Figure out what the current search text is
-     * 2. Find the list of ReactElements inside the selectMenuRef
-     * 3. Sort the list of ReactElements given the search text,
-     * 4. Render the list of select options
-     *
-     * When sorting, we should still maintain a copy of the original ReactElements & their order
-     * We use this copy of original ReactElements whenever we want to handleSearchText
-     */
+  const handleSearchText = React.useCallback(
+    (event: KeyboardEvent) => {
+      /**
+       * Steps to handle the search text
+       * 1. Figure out what the current search text is
+       * 2. Find the list of ReactElements inside the selectMenuRef
+       * 3. Sort the list of ReactElements given the search text,
+       * 4. Render the list of select options
+       *
+       * When sorting, we should still maintain a copy of the original ReactElements & their order
+       * We use this copy of original ReactElements whenever we want to handleSearchText
+       */
 
-    const node = selectMenuRef;
+      const node = selectMenuRef;
 
-    console.log((selectMenuRef.current as any).childNodes);
+      console.log((selectMenuRef.current as any).childNodes);
 
-    if (isOpen && node) {
+      if (isOpen && node) {
+        const newSearchText = updateSearchText(event.key);
+        const children = node.current?.childNodes;
 
-      const newSearchText = updateSearchText(event.key);
-      const children = node.current?.childNodes;
-
-      if (children == null || children == undefined) {
-        return;
-      }
-
-      let childrenAsArray = [];
-
-      for (let i = 0; i < children!.length; i++) {
-        childrenAsArray[i] = children.item(i);
-      }
-      console.log(childrenAsArray);
-
-      if (childrenAsArray.length > 0) {
-        let lowestDist: number = editDistance.levenshtein(newSearchText,
-          childrenAsArray[0]!.childNodes, insert, remove, update).distance;
-        let lowIdx = 0;
-
-        for (let i = 1; i < childrenAsArray.length; i++) {
-          const currentDist: number = editDistance.levenshtein(newSearchText,
-            childrenAsArray[i]!.childNodes, insert, remove, update).distance;
-          if (lowestDist > currentDist) {
-            lowestDist = currentDist;
-            lowIdx = i;
-          }
+        if (children === null || children === undefined) {
+          return;
         }
 
-        dispatch({
-          type: SelectActionKind.OPTION_TYPED,
-          payload: {
-            value: "hi", //childrenAsArray[lowIdx]?.value,
-            label: lowIdx //childrenAsArray[lowIdx]?.children,
+        let childrenAsArray = [];
+
+        for (let i = 0; i < children!.length; i++) {
+          childrenAsArray[i] = children.item(i);
+        }
+        console.log(childrenAsArray);
+
+        if (childrenAsArray.length > 0) {
+          let lowestDist: number = editDistance.levenshtein(
+            newSearchText,
+            childrenAsArray[0]!.childNodes,
+            insert,
+            remove,
+            update
+          ).distance;
+          let lowIdx = 0;
+
+          for (let i = 1; i < childrenAsArray.length; i++) {
+            const currentDist: number = editDistance.levenshtein(
+              newSearchText,
+              childrenAsArray[i]!.childNodes,
+              insert,
+              remove,
+              update
+            ).distance;
+            if (lowestDist > currentDist) {
+              lowestDist = currentDist;
+              lowIdx = i;
+            }
           }
-        });
+
+          dispatch({
+            type: SelectActionKind.OPTION_TYPED,
+            payload: {
+              value: "hi", //childrenAsArray[lowIdx]?.value,
+              label: lowIdx, //childrenAsArray[lowIdx]?.children,
+            },
+          });
+        }
       }
-    }
-  }, [searchText]);  
+    },
+    [isOpen, updateSearchText]
+  );
 
   const onClose = () => {
     setIsOpen(false);
-  }
+  };
   const onToggle = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
       setSearchText("");
     }
-  }
-
+  };
 
   /**
    * Generate unique ids for select's list and button
    */
-  const [buttonId, selectListId] = useIds(`select-button`, `select-list`)
+  const [buttonId, selectListId] = useIds(`select-button`, `select-list`);
   // NOTE: mutability introduced here in order to reassign ref if a different ref was passed in
   // NOTE: there may be multiple elements that gets their ref generated
   // in that case, when MULTIPLE selects are open at the same time, it might be a little confused on what
@@ -196,19 +205,25 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   // in most use cases, we don't particularly care for closing ALL of the select menus
   // but if this feature were to be included in the future, we would keep track of a SET of refs that gets
   // updated whenever we call the function getMenuProps.
-  let selectMenuRef = React.useRef<HTMLDivElement>(null)
+  let selectMenuRef = React.useRef<HTMLDivElement>(null);
 
-  const handleClickOutside = React.useCallback((event: MouseEvent) => {
-    // If closeOnBlur is false, we don't close when clicked outside
+  const handleClickOutside = React.useCallback(
+    (event: MouseEvent) => {
+      // If closeOnBlur is false, we don't close when clicked outside
 
-    if (!closeOnBlur) {
-      return;
-    }
-    if (selectMenuRef.current && !selectMenuRef.current.contains(event.target as Node)) {
-      onClose();
-      setSearchText("");
-    }
-  }, [selectMenuRef]);
+      if (!closeOnBlur) {
+        return;
+      }
+      if (
+        selectMenuRef.current &&
+        !selectMenuRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+        setSearchText("");
+      }
+    },
+    [selectMenuRef, closeOnBlur]
+  );
 
   React.useEffect(() => {
     if (isOpen) {
@@ -225,7 +240,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
       // Unbind the event listener on clean up
       document.removeEventListener("keydown", handleSearchText);
     };
-  }, [isOpen, searchText, selectMenuRef]);
+  }, [isOpen, searchText, selectMenuRef, handleSearchText]);
 
   const getOptionProps = ({ value }: { value: string }) => {
     return {
@@ -240,11 +255,11 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
           payload: {
             value,
             label: value, // TODO: fix removed label
-          }
+          },
         });
       },
-    }
-  }
+    };
+  };
 
   const getMenuProps = (props?: GetSelectMenuOptions) => {
     if (props?.ref != null) {
@@ -253,8 +268,8 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     console.log(props);
     return {
       ref: selectMenuRef,
-    }
-  }
+    };
+  };
 
   return {
     state: {
@@ -270,5 +285,5 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     // handleSearchText,
     // handleClickOutside,
     // getRenderedChildren,
-  }
+  };
 }
