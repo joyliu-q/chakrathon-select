@@ -96,9 +96,9 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     value: "",
   });
 
-  function updateSearchText(key: string) {
+  const updateSearchText = React.useCallback((key: string) => {
     let newSearchText = searchText;
-    if (key == "Backspace") {
+    if (key === "Backspace") {
       newSearchText = searchText.slice(0, -1);
     }
 
@@ -112,7 +112,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
 
     setSearchText(newSearchText);
     return newSearchText;
-  }
+  }, [searchText]);
 
   const handleSearchText = React.useCallback(
     (event: KeyboardEvent) => {
@@ -135,7 +135,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
         const newSearchText = updateSearchText(event.key);
         const children = node.current?.childNodes;
 
-        if (children == null || children == undefined) {
+        if (children === null || children === undefined) {
           return;
         }
 
@@ -180,7 +180,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
         }
       }
     },
-    [searchText]
+    [isOpen, updateSearchText]
   );
 
   const onClose = () => {
@@ -222,7 +222,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
         setSearchText("");
       }
     },
-    [selectMenuRef]
+    [selectMenuRef, closeOnBlur]
   );
 
   React.useEffect(() => {
@@ -240,7 +240,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
       // Unbind the event listener on clean up
       document.removeEventListener("keydown", handleSearchText);
     };
-  }, [isOpen, searchText, selectMenuRef]);
+  }, [isOpen, searchText, selectMenuRef, handleSearchText]);
 
   const getOptionProps = ({ value }: { value: string }) => {
     return {
