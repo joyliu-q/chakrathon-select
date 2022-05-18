@@ -8,7 +8,6 @@ import {
   PropsOf,
   Stack,
   Text,
-  useBoolean,
 } from "@chakra-ui/react";
 import {
   AnimatePresence,
@@ -34,6 +33,7 @@ const update = function (stringA: string, stringB: string) {
 // https://reactjs.org/docs/composition-vs-inheritance.html
 export interface SelectProps extends InputProps {
   rootProps?: RootProps;
+  value?: string;
 }
 
 interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
@@ -42,9 +42,12 @@ interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
-  const { size, children } = props;
+
+
+  const { size, children} = props;
 
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
+//   const input = useFormControl<HTMLInputElement>(rest);
 
   const [isOpen, setOpen] = React.useState(true);
   const [searchText, setSearchText] = React.useState("");
@@ -118,6 +121,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   }
 
   return (
+      <>
     <Box position="relative" ref={ref}>
       <Flex
         w="full"
@@ -184,6 +188,8 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         )}
       </AnimatePresence>
     </Box>
+    <input hidden value={state.value}/>
+    </>
   );
 });
 

@@ -1,23 +1,35 @@
-import {Box, Stack} from "@chakra-ui/react";
-import {Select, SelectOption} from "../components/select";
-import {Select as ChakraSelect} from "@chakra-ui/react";
+import { Button, Stack, FormControl } from "@chakra-ui/react";
+import { Select, SelectOption } from "../components/select";
+import { Select as ChakraSelect } from "@chakra-ui/react";
+
+function handleSubmit(e: any) {
+    e.preventDefault();
+    console.log(e.target[0].value);
+}
 
 function Form() {
-    return (
-      <Stack spacing={4} p={16}>
-        <Select>
-          <SelectOption value="1">Option 1</SelectOption>
-          <SelectOption value="2">Option 2</SelectOption>
-          <SelectOption value="3">Option 3</SelectOption>
-          <SelectOption value="4">Option 4</SelectOption>
-        </Select>
-        <ChakraSelect>
-          <option value="1">Option 1</option>
-          <option value="2">Option 2</option>
-          <option value="3">Option 3</option>
-        </ChakraSelect>
-      </Stack>
-    );
+  return (
+    <Stack spacing={4} p={16}>
+      <form onSubmit={handleSubmit}>
+        <FormControl>
+          <Select>
+            <SelectOption value="1">Option 1</SelectOption>
+            <SelectOption value="2">Option 2</SelectOption>
+            <SelectOption value="3">Option 3</SelectOption>
+            <SelectOption value="4">Option 4</SelectOption>
+          </Select>
+        </FormControl>
+        <Button width="full" mt={4} type="submit">
+              Sign In
+        </Button>
+      </form>
+      <ChakraSelect>
+        <option value="1">Option 1</option>
+        <option value="2">Option 2</option>
+        <option value="3">Option 3</option>
+      </ChakraSelect>
+    </Stack>
+  );
 }
 
 export default Form;
