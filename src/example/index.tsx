@@ -1,11 +1,22 @@
-import { Box, Button, Stack, Text, VStack } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Stack,
+  Text,
+  VStack,
+  FormControl,
+} from "@chakra-ui/react";
 import { Select, SelectOption } from "../components/select";
 import { Select as ChakraSelect } from "@chakra-ui/react";
 import { useSelect } from "../hooks";
 import React from "react";
 
-function Form() {
+function handleSubmit(e: any) {
+  e.preventDefault();
+  console.log(e.target[0].value);
+}
 
+function Form() {
   const {
     // openAndFocusFirstItem,
     // openAndFocusLastItem,

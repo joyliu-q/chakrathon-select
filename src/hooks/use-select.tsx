@@ -1,7 +1,6 @@
 import {
   useIds,
 } from "@chakra-ui/hooks"
-import { stringify } from "querystring";
 import * as React from "react"
 import { GetSelectMenuOptions, UseSelectReturn } from "../type";
 

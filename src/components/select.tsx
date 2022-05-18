@@ -18,7 +18,6 @@ import {
 import React from "react";
 import {
   forwardRef,
-  layoutPropNames,
   omitThemingProps,
 } from "@chakra-ui/system";
 import { split } from "@chakra-ui/utils";
@@ -41,11 +40,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
     getOptionProps,
   } = useSelect();
 
-  const { size, children } = props;
-
   const { rootProps, placeholder, ...rest } = omitThemingProps(props);
-
-  const [layoutProps, _otherProps] = split(rest, layoutPropNames as any[]);
 
   /**
     * Alert if clicked on outside of element
@@ -199,7 +194,6 @@ export const SelectOption: React.FC<SelectOptionProps> = ({
   handleKeyPress = () => { },
   ...props
 }) => {
-
   return (
     <Box
       onClick={() => handleClick(value, children)}
