@@ -28,14 +28,14 @@ export interface SelectProps extends InputProps {
   rootProps?: RootProps;
 }
 
-interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> { }
+interface RootProps extends Omit<HTMLChakraProps<"div">, "color"> {}
 
 /**
  * React component used to select one item from a list of options.
  */
 export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   const {
-    state, 
+    state,
     getButtonProps,
     getMenuProps,
     getOptionProps,
@@ -86,8 +86,8 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
   }, [ref, state.isOpen, searchText]);
 
   /**
-    * Alert if clicked on outside of element
-  */
+   * Alert if clicked on outside of element
+   */
 
   let displayChildren = props.children;
 
@@ -236,8 +236,8 @@ interface SelectOptionProps extends BoxProps {
 export const SelectOption: React.FC<SelectOptionProps> = ({
   children,
   value,
-  handleClick = () => { },
-  handleKeyPress = () => { },
+  handleClick = () => {},
+  handleKeyPress = () => {},
   ...props
 }) => {
   return (

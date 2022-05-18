@@ -1,12 +1,10 @@
-import {
-  useIds,
-} from "@chakra-ui/hooks"
-import * as React from "react"
+import { useIds } from "@chakra-ui/hooks";
+import * as React from "react";
 import { GetSelectMenuOptions, UseSelectReturn } from "../type";
 
 enum SelectActionKind {
   OPTION = "option",
-  OPTION_TYPED = "option_type"
+  OPTION_TYPED = "option_type",
 }
 
 interface SelectAction {
@@ -33,18 +31,18 @@ export interface UseSelectProps {
    *
    * @default true
    */
-  closeOnSelect?: boolean
+  closeOnSelect?: boolean;
   /**
    * If `true`, the select will close when you click outside
    * the select list
    *
    * @default true
    */
-  closeOnBlur?: boolean
+  closeOnBlur?: boolean;
   /**
    * placeholder to display when no value is selected
    */
-  placeholder?: React.ReactNode
+  placeholder?: React.ReactNode;
 }
 
 /**
@@ -92,18 +90,17 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
 
   const onClose = () => {
     setIsOpen(false);
-  }
+  };
   const onToggle = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
     }
-  }
-
+  };
 
   /**
    * Generate unique ids for select's list and button
    */
-  const [buttonId, selectListId] = useIds(`select-button`, `select-list`)
+  const [buttonId, selectListId] = useIds(`select-button`, `select-list`);
   // NOTE: mutability introduced here in order to reassign ref if a different ref was passed in
   // NOTE: there may be multiple elements that gets their ref generated
   // in that case, when MULTIPLE selects are open at the same time, it might be a little confused on what
@@ -112,18 +109,25 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   // in most use cases, we don't particularly care for closing ALL of the select menus
   // but if this feature were to be included in the future, we would keep track of a SET of refs that gets
   // updated whenever we call the function getMenuProps.
-  let selectMenuRef = React.useRef<HTMLDivElement>(null)
+  let selectMenuRef = React.useRef<HTMLDivElement>(null);
 
-  const handleClickOutside = React.useCallback((event: MouseEvent) => {
-    // If closeOnBlur is false, we don't close when clicked outside
+  const handleClickOutside = React.useCallback(
+    (event: MouseEvent) => {
+      // If closeOnBlur is false, we don't close when clicked outside
 
-    if (!closeOnBlur) {
-      return;
-    }
-    if (selectMenuRef.current && !selectMenuRef.current.contains(event.target as Node)) {
-      onClose();
-    }
-  }, [selectMenuRef]);
+
+      if (!closeOnBlur) {
+        return;
+      }
+      if (
+        selectMenuRef.current &&
+        !selectMenuRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    },
+    [selectMenuRef, closeOnBlur]
+  );
 
   React.useEffect(() => {
     if (isOpen) {
@@ -146,11 +150,11 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
           payload: {
             value,
             label: value, // TODO: fix removed label
-          }
+          },
         });
       },
-    }
-  }
+    };
+  };
 
   const getMenuProps = (props?: GetSelectMenuOptions) => {
     if (props?.ref != null) {
@@ -159,8 +163,8 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
 
     return {
       ref: selectMenuRef,
-    }
-  }
+    };
+  };
 
   const setStateValue = (value: string) => {
     dispatch({
@@ -187,5 +191,5 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     // handleSearchText,
     // handleClickOutside,
     // getRenderedChildren,
-  }
+  };
 }
