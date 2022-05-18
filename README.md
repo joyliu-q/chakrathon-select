@@ -53,7 +53,7 @@ The hook offers 4 key returns:
 ```javascript
 <Box>
   <Box {...getButtonProps} bgColor="grey">
-    {state.value == "" ? "Press to select!" : state.value}
+    {state.value === "" ? "Press to select!" : state.value}
   </Box>
   {state.isOpen ? (
     <VStack align="start" py={2} {...getMenuProps()}>
@@ -96,7 +96,7 @@ function Form() {
       <Text>Custom useSelect (Hook)</Text>
       <Box>
         <Box {...getButtonProps} bgColor="grey">
-          {state.value == "" ? "Press to select!" : state.value}
+          {state.value === "" ? "Press to select!" : state.value}
         </Box>
         {state.isOpen ? (
           <VStack align="start" py={2} {...getMenuProps()}>
