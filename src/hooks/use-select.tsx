@@ -115,6 +115,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     (event: MouseEvent) => {
       // If closeOnBlur is false, we don't close when clicked outside
 
+
       if (!closeOnBlur) {
         return;
       }
@@ -175,6 +176,11 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     });
   }
 
+  const addValueToForm = () => {
+    return <input value={state.value} hidden={true}/>
+  }
+
+
   return {
     state: {
       value: state.value,
@@ -186,7 +192,8 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     },
     getMenuProps,
     getOptionProps,
-    setStateValue
+    setStateValue,
+    addValueToForm
     // handleSearchText,
     // handleClickOutside,
     // getRenderedChildren,

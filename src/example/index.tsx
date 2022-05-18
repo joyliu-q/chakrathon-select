@@ -21,6 +21,7 @@ function Form() {
     getButtonProps,
     getOptionProps,
     getMenuProps,
+    addValueToForm
   } = useSelect();
 
   return (
@@ -43,6 +44,7 @@ function Form() {
           </VStack>
         : null}
       </Box>
+      {addValueToForm()}
       <Text>Chakra's Select</Text>
       <ChakraSelect>
         <option value="1">Option 1</option>

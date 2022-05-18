@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactElement} from "react";
 
 export interface UseSelectReturn {
   state: SelectState;
@@ -6,6 +6,7 @@ export interface UseSelectReturn {
   getMenuProps: (props?: GetSelectMenuOptions) => GetSelectMenuProps;
   getOptionProps: ({ value }: { value: string }) => GetSelectOptionProps;
   setStateValue: (value: string) => void;
+  addValueToForm: () => ReactElement;
 }
 
 export type GetSelectMenuOptions = {
