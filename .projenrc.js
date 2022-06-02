@@ -2,7 +2,7 @@ const { web } = require("projen");
 const project = new web.ReactTypeScriptProject({
   defaultReleaseBranch: "main",
   name: "chakrathon-select",
-
+  depsUpgrade: false,
   deps: [
     "@chakra-ui/clickable",
     "@chakra-ui/descendant",
