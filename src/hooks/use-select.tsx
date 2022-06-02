@@ -11,12 +11,12 @@ interface SelectAction {
   type: SelectActionKind;
   payload: {
     value: string;
-    label: React.ReactNode;
+    label: string;
   };
 }
 
 interface SelectState {
-  label: React.ReactNode;
+  label: string;
   value: string;
 }
 
@@ -42,7 +42,7 @@ export interface UseSelectProps {
   /**
    * placeholder to display when no value is selected
    */
-  placeholder?: React.ReactNode;
+  placeholder?: string;
 }
 
 /**
@@ -100,7 +100,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   /**
    * Generate unique ids for select's list and button
    */
-  const [buttonId, selectListId] = useIds(`select-button`, `select-list`);
+  const [buttonId,] = useIds(`select-button`);
   // NOTE: mutability introduced here in order to reassign ref if a different ref was passed in
   // NOTE: there may be multiple elements that gets their ref generated
   // in that case, when MULTIPLE selects are open at the same time, it might be a little confused on what
@@ -137,21 +137,37 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     }
   }, [selectMenuRef, isOpen, handleClickOutside]);
 
+
+
   const getOptionProps = ({ value }: { value: string }) => {
+
+    const makeRandomId = () => {
+      return Math.random().toString(36).substring(5);
+    }
+
+    const optionId = `option-${value}-${makeRandomId()}`;
+
     return {
-      id: selectListId,
+      id: optionId,
       value,
       onClick: (_: React.MouseEvent) => {
-        if (closeOnSelect) {
-          onClose();
-        }
+        const element = document.getElementById(optionId);
+        console.log(element);
+        console.log(element?.innerText);
+        
+        
+
         dispatch({
           type: SelectActionKind.OPTION,
           payload: {
             value,
-            label: value, // TODO: fix removed label
+            label: element?.innerText ?? value,
           },
         });
+
+        if (closeOnSelect) {
+          onClose();
+        }
       },
     };
   };
@@ -166,12 +182,14 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
     };
   };
 
-  const setStateValue = (value: string) => {
+  const setStateValue = (value: string, element?: React.ReactElement) => {
+    const label = element?.props.children ?? value;
+    
     dispatch({
       type: SelectActionKind.OPTION,
       payload: {
         value,
-        label: value
+        label
       }
     });
   }
@@ -184,6 +202,7 @@ export function useSelect(props: UseSelectProps = {}): UseSelectReturn {
   return {
     state: {
       value: state.value,
+      label: state.label,
       isOpen,
     },
     getButtonProps: {

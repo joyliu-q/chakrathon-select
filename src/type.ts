@@ -5,7 +5,7 @@ export interface UseSelectReturn {
   getButtonProps: GetSelectButtonProps;
   getMenuProps: (props?: GetSelectMenuOptions) => GetSelectMenuProps;
   getOptionProps: ({ value }: { value: string }) => GetSelectOptionProps;
-  setStateValue: (value: string) => void;
+  setStateValue: (value: string, children?: ReactElement) => void;
   addValueToForm: () => ReactElement;
 }
 
@@ -15,6 +15,7 @@ export type GetSelectMenuOptions = {
 
 export interface SelectState {
   value?: string;
+  label?: string;
   isOpen: boolean;
   // TODO: add id
   //id: string;

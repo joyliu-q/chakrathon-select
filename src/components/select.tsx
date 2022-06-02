@@ -76,7 +76,9 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         console.log(newSearchText);
         const childrenAsArray = props.children as ReactElement[];
         const lowestIdx = getIdxLowestLevenshteinDistance(childrenAsArray, newSearchText);
-        setStateValue(childrenAsArray[lowestIdx].props.value);
+        const bestMatchProps = childrenAsArray[lowestIdx].props
+        const bestMatch = childrenAsArray[lowestIdx];
+        setStateValue(bestMatchProps.value, bestMatch);
       }
     }
 
@@ -122,7 +124,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
         {...VARIANT_TO_SELECT_BUTTON_STYLE[variant]}
         {...getButtonProps}
       >
-        {state.value ? <Text userSelect="none">{state.value}</Text> : <Text color={VARIANT_TO_SELECT_BUTTON_STYLE[variant].color ?? "gray.300"}>{placeholder}</Text>}
+        {state.label ? <Text userSelect="none">{state.label}</Text> : <Text color={VARIANT_TO_SELECT_BUTTON_STYLE[variant].color ?? "gray.300"}>{placeholder}</Text>}
         { 
           variant === "saitama" ?
           <SaitamaIcon /> :
@@ -159,6 +161,7 @@ export const Select = forwardRef<SelectProps, "select">((props, _ref) => {
           </Stack>
         )}
       </AnimatePresence>
+      <input hidden value={state.value}></input>
     </Box>
   );
 });
